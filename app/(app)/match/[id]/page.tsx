@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SeenMarker } from "./client";
+import { Avatar } from "../../_components/avatar";
 
 export default async function MatchPage({
   params,
@@ -35,12 +36,12 @@ export default async function MatchPage({
   const [meResult, friendResult, prefResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, username")
+      .select("display_name, username, avatar_url")
       .eq("id", user.id)
       .maybeSingle(),
     supabase
       .from("profiles")
-      .select("display_name, username")
+      .select("display_name, username, avatar_url")
       .eq("id", friendId)
       .maybeSingle(),
     supabase
@@ -57,9 +58,8 @@ export default async function MatchPage({
     friendResult.data?.username ??
     "your friend";
   const activityLabel = prefResult.data?.label ?? "this";
-
-  const myInitial = me.charAt(0).toUpperCase();
-  const friendInitial = friend.charAt(0).toUpperCase();
+  const myAvatar = meResult.data?.avatar_url ?? null;
+  const friendAvatar = friendResult.data?.avatar_url ?? null;
 
   // sms: deep link — encoded body, no recipient (user picks from contacts).
   const smsBody = `hey ${friend} — ${activityLabel.toLowerCase()} this weekend? matched via letshangg`;
@@ -95,9 +95,9 @@ export default async function MatchPage({
 
           {/* Avatars + heart */}
           <div className="mt-14 flex items-center justify-center gap-4">
-            <Avatar initial={myInitial} label={`${me} avatar`} />
+            <Avatar name={me} url={myAvatar} size="lg" />
             <HeartIcon />
-            <Avatar initial={friendInitial} label={`${friend} avatar`} />
+            <Avatar name={friend} url={friendAvatar} size="lg" />
           </div>
 
           {/* Names */}
@@ -149,18 +149,6 @@ export default async function MatchPage({
         `}
       </style>
     </main>
-  );
-}
-
-function Avatar({ initial, label }: { initial: string; label: string }) {
-  return (
-    <span
-      role="img"
-      aria-label={label}
-      className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft font-serif text-2xl text-ink"
-    >
-      {initial}
-    </span>
   );
 }
 

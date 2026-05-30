@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { swipeHang } from "./actions";
+import { Avatar } from "../_components/avatar";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -91,7 +92,7 @@ export default async function HomePage() {
   const [friendResult, prefResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, username")
+      .select("display_name, username, avatar_url")
       .eq("id", friendId)
       .maybeSingle(),
     supabase
@@ -106,7 +107,7 @@ export default async function HomePage() {
 
   const friendName =
     friendProfile?.display_name ?? friendProfile?.username ?? "your friend";
-  const friendInitial = friendName.charAt(0).toUpperCase();
+  const friendAvatar = friendProfile?.avatar_url ?? null;
   const activityEmoji = prefRow?.emoji ?? "🤝";
   const activityLabel = prefRow?.label ?? "hang";
 
@@ -115,11 +116,8 @@ export default async function HomePage() {
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[430px]">
         {/* Card */}
         <div className="w-full rounded-2xl bg-surface border border-line px-8 py-12 text-center">
-          <div
-            className="mx-auto h-14 w-14 rounded-full bg-accent-soft flex items-center justify-center font-serif text-2xl text-ink"
-            aria-label={`${friendName} avatar`}
-          >
-            {friendInitial}
+          <div className="flex justify-center">
+            <Avatar name={friendName} url={friendAvatar} size="md" />
           </div>
           <p className="mt-3 font-sans text-sm text-muted">{friendName}</p>
 

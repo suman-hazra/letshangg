@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { acceptFriendRequest, declineFriendRequest } from "./actions";
+import { Avatar } from "../_components/avatar";
 
 export default async function FriendsPage({
   searchParams,
@@ -40,17 +41,18 @@ export default async function FriendsPage({
 
   const profileById = new Map<
     string,
-    { display_name: string | null; username: string }
+    { display_name: string | null; username: string; avatar_url: string | null }
   >();
   if (friendIds.size > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, display_name, username")
+      .select("id, display_name, username, avatar_url")
       .in("id", Array.from(friendIds));
     for (const p of profiles ?? []) {
       profileById.set(p.id, {
         display_name: p.display_name,
         username: p.username,
+        avatar_url: p.avatar_url,
       });
     }
   }
@@ -108,7 +110,7 @@ export default async function FriendsPage({
                     key={r.id}
                     className="rounded-2xl bg-surface border border-line px-4 py-3 flex items-center gap-3"
                   >
-                    <Avatar name={name} />
+                    <Avatar name={name} url={p?.avatar_url} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="font-sans text-sm font-semibold text-ink truncate">
                         {name}
@@ -163,7 +165,7 @@ export default async function FriendsPage({
                     key={r.id}
                     className="rounded-2xl bg-surface border border-line px-4 py-3 flex items-center gap-3"
                   >
-                    <Avatar name={name} />
+                    <Avatar name={name} url={p?.avatar_url} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="font-sans text-sm font-semibold text-ink truncate">
                         {name}
@@ -206,14 +208,3 @@ export default async function FriendsPage({
   );
 }
 
-function Avatar({ name }: { name: string }) {
-  const initial = name.charAt(0).toUpperCase();
-  return (
-    <span
-      aria-hidden
-      className="inline-flex h-10 w-10 rounded-full bg-accent-soft items-center justify-center font-serif text-base text-ink"
-    >
-      {initial}
-    </span>
-  );
-}

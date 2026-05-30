@@ -34,7 +34,7 @@ export default async function ChatPage({
   const [friendResult, prefResult, messagesResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, username")
+      .select("display_name, username, avatar_url")
       .eq("id", friendId)
       .maybeSingle(),
     supabase
@@ -53,6 +53,7 @@ export default async function ChatPage({
     friendResult.data?.display_name ??
     friendResult.data?.username ??
     "your friend";
+  const friendAvatar = friendResult.data?.avatar_url ?? null;
   const activityLabel = prefResult.data?.label ?? "hang";
   const activityEmoji = prefResult.data?.emoji ?? "🤝";
 
@@ -61,6 +62,7 @@ export default async function ChatPage({
       hangId={hang.id}
       myId={user.id}
       friendName={friendName}
+      friendAvatar={friendAvatar}
       activityLabel={activityLabel}
       activityEmoji={activityEmoji}
       initialMessages={messagesResult.data ?? []}

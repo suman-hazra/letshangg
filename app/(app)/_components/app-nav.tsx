@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const TABS: { href: string; label: string; match: (p: string) => boolean }[] = [
   { href: "/home", label: "Home", match: (p) => p === "/home" || p.startsWith("/match") },
   { href: "/friends", label: "Friends", match: (p) => p.startsWith("/friends") },
+  { href: "/profile", label: "You", match: (p) => p.startsWith("/profile") },
 ];
 
 export function AppNav() {

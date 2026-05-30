@@ -16,6 +16,7 @@ export function ChatRoom({
   hangId,
   myId,
   friendName,
+  friendAvatar,
   activityLabel,
   activityEmoji,
   initialMessages,
@@ -24,6 +25,7 @@ export function ChatRoom({
   hangId: string;
   myId: string;
   friendName: string;
+  friendAvatar: string | null;
   activityLabel: string;
   activityEmoji: string;
   initialMessages: Message[];
@@ -114,6 +116,21 @@ export function ChatRoom({
         >
           ←
         </Link>
+        {friendAvatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={friendAvatar}
+            alt=""
+            className="h-9 w-9 rounded-full object-cover bg-accent-soft shrink-0"
+          />
+        ) : (
+          <span
+            aria-hidden
+            className="h-9 w-9 rounded-full bg-accent-soft inline-flex items-center justify-center font-serif text-base text-ink shrink-0"
+          >
+            {friendName.charAt(0).toUpperCase()}
+          </span>
+        )}
         <div className="flex-1 min-w-0">
           <p className="font-sans text-sm font-semibold text-ink truncate">
             {friendName}
