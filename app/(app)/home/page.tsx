@@ -65,8 +65,7 @@ export default async function HomePage() {
   // 3. Empty state.
   if (!hang) {
     return (
-      <main className="min-h-dvh flex flex-col items-center px-6 py-12">
-        <Header />
+      <main className="flex-1 flex flex-col items-center px-6 pb-12">
         <div className="flex-1 flex items-center justify-center w-full max-w-[430px]">
           <div className="text-center">
             <h1 className="font-serif text-3xl text-ink leading-tight">
@@ -112,9 +111,7 @@ export default async function HomePage() {
   const activityLabel = prefRow?.label ?? "hang";
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-6 py-12">
-      <Header />
-
+    <main className="flex-1 flex flex-col items-center px-6 pb-12">
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[430px]">
         {/* Card */}
         <div className="w-full rounded-2xl bg-surface border border-line px-8 py-12 text-center">
@@ -155,14 +152,6 @@ export default async function HomePage() {
         </p>
       </div>
     </main>
-  );
-}
-
-function Header() {
-  return (
-    <p className="font-sans text-sm tracking-widest uppercase text-muted w-full max-w-[430px] text-center">
-      letshangg
-    </p>
   );
 }
 

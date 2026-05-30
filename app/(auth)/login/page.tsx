@@ -1,6 +1,11 @@
 import { signInWithGoogle } from "./actions";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
   return (
     <main className="min-h-dvh flex items-center justify-center px-6">
       <div className="w-full max-w-[430px] text-center">
@@ -20,6 +25,7 @@ export default function LoginPage() {
         </p>
 
         <form action={signInWithGoogle} className="mt-10">
+          {next && <input type="hidden" name="next" value={next} />}
           <button
             type="submit"
             className="inline-flex h-12 items-center justify-center gap-3 rounded-full bg-ink px-7 text-sm font-medium text-surface transition hover:opacity-90"

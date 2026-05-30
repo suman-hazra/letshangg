@@ -111,15 +111,23 @@ export default async function MatchPage({
             you both said yes
           </p>
 
-          {/* CTA */}
+          {/* Primary CTA — in-app chat */}
           <a
-            href={smsHref}
+            href={`/match/${hang.id}/chat`}
             autoFocus
-            aria-label={`Open conversation with ${friend} via Messages`}
+            aria-label={`Open conversation with ${friend}`}
             className="mt-12 inline-flex h-12 min-h-[48px] w-full max-w-[280px] items-center justify-center gap-2 rounded-full bg-ink px-7 text-sm font-semibold text-surface transition hover:opacity-90 focus:outline-2 focus:outline-offset-4 focus:outline-accent"
           >
             Open Conversation
             <ArrowRight />
+          </a>
+
+          {/* Secondary — drop into Messages instead */}
+          <a
+            href={smsHref}
+            className="mt-3 inline-block font-sans text-sm text-muted hover:text-ink transition"
+          >
+            or text via Messages
           </a>
         </div>
       </div>

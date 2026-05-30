@@ -44,6 +44,11 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    // Preserve the original destination so post-login routes back there.
+    const dest = pathname + (request.nextUrl.search ?? "");
+    if (dest && dest !== "/") {
+      url.searchParams.set("next", dest);
+    }
     return NextResponse.redirect(url);
   }
 

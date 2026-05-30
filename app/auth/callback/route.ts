@@ -19,7 +19,6 @@ export async function GET(request: Request) {
     );
   }
 
-  // Has this user finished onboarding (profile + at least one preference)?
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,13 +27,20 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=no_user`);
   }
 
+  // If 'next' points to an invite link, let the user accept that first;
+  // /i/[username] knows how to bounce them to onboarding afterwards.
+  const nextIsInvite = next.startsWith("/i/");
+  if (nextIsInvite) {
+    return NextResponse.redirect(`${origin}${next}`);
+  }
+
+  // Otherwise, route by onboarding state.
   const { data: profile } = await supabase
     .from("profiles")
     .select("display_name")
     .eq("id", user.id)
     .maybeSingle();
 
-  // No display_name = profile is a trigger-created stub, send to onboarding
   if (!profile?.display_name) {
     return NextResponse.redirect(`${origin}/onboarding/profile`);
   }

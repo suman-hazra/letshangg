@@ -1,0 +1,105 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendMatchEmail } from "@/lib/email";
+
+export async function swipeHang(formData: FormData) {
+  const hangId = String(formData.get("hang_id") ?? "");
+  const verdict = String(formData.get("verdict") ?? "");
+
+  if (!hangId || (verdict !== "right" && verdict !== "left")) {
+    redirect("/home");
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // Determine which column to write to.
+  const { data: hang } = await supabase
+    .from("hangs")
+    .select("id, user_a, user_b, swipe_a, swipe_b, preference_id, prompt_copy")
+    .eq("id", hangId)
+    .maybeSingle();
+
+  if (!hang) redirect("/home");
+
+  const isUserA = hang.user_a === user.id;
+  const isUserB = hang.user_b === user.id;
+  if (!isUserA && !isUserB) redirect("/home");
+
+  const otherSide = isUserA ? hang.swipe_b : hang.swipe_a;
+  const matched = verdict === "right" && otherSide === "right";
+
+  const update: {
+    swipe_a?: "right" | "left";
+    swipe_b?: "right" | "left";
+    matched?: boolean;
+  } = isUserA ? { swipe_a: verdict } : { swipe_b: verdict };
+  if (matched) update.matched = true;
+
+  await supabase.from("hangs").update(update).eq("id", hangId);
+
+  revalidatePath("/home");
+
+  // When the swipe completes the match, notify the OTHER user by email.
+  // On Vercel serverless we can't truly fire-and-forget, so we await with a
+  // 3s cap. Email never blocks the user beyond that — match screen loads even
+  // if Resend is slow or unreachable.
+  if (matched) {
+    const otherUserId = isUserA ? hang.user_b : hang.user_a;
+    await Promise.race([
+      notifyMatch(otherUserId, user.id, hang.id, hang.prompt_copy).catch(
+        (e) => console.error("notifyMatch failed", e),
+      ),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
+    redirect(`/match/${hangId}`);
+  }
+  redirect("/home");
+}
+
+async function notifyMatch(
+  recipientId: string,
+  swiperId: string,
+  hangId: string,
+  promptCopy: string,
+): Promise<void> {
+  const admin = createAdminClient();
+
+  // Look up recipient (email + display name) and swiper (display name).
+  const [{ data: rUser }, { data: rProfile }, { data: sProfile }] =
+    await Promise.all([
+      admin.auth.admin.getUserById(recipientId),
+      admin
+        .from("profiles")
+        .select("display_name, username")
+        .eq("id", recipientId)
+        .maybeSingle(),
+      admin
+        .from("profiles")
+        .select("display_name, username")
+        .eq("id", swiperId)
+        .maybeSingle(),
+    ]);
+
+  const toEmail = rUser?.user?.email;
+  if (!toEmail) return;
+
+  const toName = rProfile?.display_name ?? rProfile?.username ?? "you";
+  const friendName =
+    sProfile?.display_name ?? sProfile?.username ?? "your friend";
+
+  await sendMatchEmail({
+    toEmail,
+    toName,
+    friendName,
+    promptCopy,
+    matchId: hangId,
+  });
+}

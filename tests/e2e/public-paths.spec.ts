@@ -40,14 +40,29 @@ test.describe("public paths", () => {
 
   test("proxy redirects unauthenticated /home to /login", async ({ page }) => {
     await page.goto("/home");
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login(\?next=.*)?$/);
   });
 
   test("proxy redirects unauthenticated /onboarding/profile to /login", async ({
     page,
   }) => {
     await page.goto("/onboarding/profile");
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login(\?next=.*)?$/);
+  });
+
+  test("proxy redirects unauthenticated /friends to /login with next= param", async ({
+    page,
+  }) => {
+    await page.goto("/friends");
+    // Should land on /login with the original path preserved
+    await expect(page).toHaveURL(/\/login\?next=%2Ffriends$/);
+  });
+
+  test("proxy redirects unauthenticated /i/anyone to /login with next= preserved", async ({
+    page,
+  }) => {
+    await page.goto("/i/dustin");
+    await expect(page).toHaveURL(/\/login\?next=%2Fi%2Fdustin$/);
   });
 
   test("design system tokens render: warm background + DM Serif headline", async ({
