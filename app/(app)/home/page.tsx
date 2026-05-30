@@ -1,7 +1,50 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { swipeHang } from "./actions";
+import { generateHangsForUser } from "@/lib/hang-manager";
+import { swipeHang, refreshHangs } from "./actions";
 import { Avatar } from "../_components/avatar";
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+type HangRow = {
+  id: string;
+  user_a: string;
+  user_b: string;
+  preference_id: string;
+  prompt_copy: string;
+  created_at: string;
+};
+
+async function fetchPendingHang(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<HangRow | null> {
+  const [resultA, resultB] = await Promise.all([
+    supabase
+      .from("hangs")
+      .select("id, user_a, user_b, preference_id, prompt_copy, created_at")
+      .eq("user_a", userId)
+      .is("swipe_a", null)
+      .eq("matched", false)
+      .order("created_at", { ascending: true })
+      .limit(1),
+    supabase
+      .from("hangs")
+      .select("id, user_a, user_b, preference_id, prompt_copy, created_at")
+      .eq("user_b", userId)
+      .is("swipe_b", null)
+      .eq("matched", false)
+      .order("created_at", { ascending: true })
+      .limit(1),
+  ]);
+
+  const candidates = [
+    ...(resultA.data ?? []),
+    ...(resultB.data ?? []),
+  ].sort((a, b) => a.created_at.localeCompare(b.created_at));
+
+  return candidates[0] ?? null;
+}
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -10,60 +53,38 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // 1. Unseen match auto-redirect (design review Issue 3).
-  const { data: unseenMatchA } = await supabase
-    .from("hangs")
-    .select("id")
-    .eq("user_a", user.id)
-    .eq("matched", true)
-    .is("seen_a_at", null)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (unseenMatchA) redirect(`/match/${unseenMatchA.id}`);
-
-  const { data: unseenMatchB } = await supabase
-    .from("hangs")
-    .select("id")
-    .eq("user_b", user.id)
-    .eq("matched", true)
-    .is("seen_b_at", null)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (unseenMatchB) redirect(`/match/${unseenMatchB.id}`);
-
-  // 2. Fetch the top pending hang for the current user.
-  //    Pending = my swipe column is null AND not matched.
-  //    Do two queries (one per side) and pick oldest — simpler than complex .or().
-  const [pendingAResult, pendingBResult] = await Promise.all([
+  // Unseen match auto-redirect.
+  const [{ data: unseenMatchA }, { data: unseenMatchB }] = await Promise.all([
     supabase
       .from("hangs")
-      .select("id, user_a, user_b, preference_id, prompt_copy, created_at")
+      .select("id")
       .eq("user_a", user.id)
-      .is("swipe_a", null)
-      .eq("matched", false)
+      .eq("matched", true)
+      .is("seen_a_at", null)
       .order("created_at", { ascending: true })
-      .limit(1),
+      .limit(1)
+      .maybeSingle(),
     supabase
       .from("hangs")
-      .select("id, user_a, user_b, preference_id, prompt_copy, created_at")
+      .select("id")
       .eq("user_b", user.id)
-      .is("swipe_b", null)
-      .eq("matched", false)
+      .eq("matched", true)
+      .is("seen_b_at", null)
       .order("created_at", { ascending: true })
-      .limit(1),
+      .limit(1)
+      .maybeSingle(),
   ]);
 
-  const candidates = [
-    ...(pendingAResult.data ?? []),
-    ...(pendingBResult.data ?? []),
-  ].sort((a, b) => a.created_at.localeCompare(b.created_at));
-  const hang = candidates[0];
+  if (unseenMatchA) redirect(`/match/${unseenMatchA.id}`);
+  if (unseenMatchB) redirect(`/match/${unseenMatchB.id}`);
 
-  // 3. Empty state.
+  // Fetch pending hangs; auto-run hang manager once if the queue is empty.
+  let hang = await fetchPendingHang(supabase, user.id);
+  if (!hang) {
+    await generateHangsForUser(user.id);
+    hang = await fetchPendingHang(supabase, user.id);
+  }
+
   if (!hang) {
     return (
       <main className="flex-1 flex flex-col items-center px-6 pb-12">
@@ -75,18 +96,23 @@ export default async function HomePage() {
               caught up.
             </h1>
             <p className="mt-6 font-sans text-base text-muted">
-              New hangs appear when your friends finish their preferences.
+              New hangs surface when you or a friend updates preferences.
             </p>
-            <p className="mt-10 font-script text-xl text-muted">
-              check back tomorrow.
-            </p>
+            <form action={refreshHangs} className="mt-8">
+              <button
+                type="submit"
+                className="font-sans text-sm text-accent underline underline-offset-4"
+              >
+                Check for new hangs
+              </button>
+            </form>
           </div>
         </div>
       </main>
     );
   }
 
-  // 4. Render the card.
+  // Render the hang card.
   const friendId = hang.user_a === user.id ? hang.user_b : hang.user_a;
 
   const [friendResult, prefResult] = await Promise.all([

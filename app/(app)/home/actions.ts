@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMatchEmail } from "@/lib/email";
+import { generateHangsForUser } from "@/lib/hang-manager";
 
 export async function swipeHang(formData: FormData) {
   const hangId = String(formData.get("hang_id") ?? "");
@@ -61,6 +62,18 @@ export async function swipeHang(formData: FormData) {
     ]);
     redirect(`/match/${hangId}`);
   }
+  redirect("/home");
+}
+
+export async function refreshHangs() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await generateHangsForUser(user.id);
+  revalidatePath("/home");
   redirect("/home");
 }
 

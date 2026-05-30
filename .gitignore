@@ -52,3 +52,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# personal notes / tutorial (not for the public repo)
+/tutorial.md

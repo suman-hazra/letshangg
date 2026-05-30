@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateHangsForUser } from "@/lib/hang-manager";
+import { sendFriendRequestEmail } from "@/lib/email";
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
@@ -83,6 +84,29 @@ export async function sendFriendRequest(formData: FormData) {
 
   if (error) {
     redirect(`/friends/add?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Notify the addressee by email. Use a 3s cap so a slow Resend never blocks.
+  const admin = createAdminClient();
+  const { data: requesterProfile } = await supabase
+    .from("profiles")
+    .select("display_name, username")
+    .eq("id", user.id)
+    .maybeSingle();
+  const { data: addresseeUser } = await admin.auth.admin.getUserById(target.id);
+  const toEmail = addresseeUser?.user?.email;
+  if (toEmail) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://letshangg.app";
+    await Promise.race([
+      sendFriendRequestEmail({
+        toEmail,
+        toName: target.display_name ?? target.username,
+        requesterName:
+          requesterProfile?.display_name ?? requesterProfile?.username ?? "Someone",
+        friendsUrl: `${siteUrl}/friends`,
+      }).catch((e) => console.error("sendFriendRequestEmail failed", e)),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
   }
 
   revalidatePath("/friends");

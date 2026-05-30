@@ -127,6 +127,104 @@ function renderMatchHtml(args: {
 </html>`;
 }
 
+export async function sendFriendRequestEmail(args: {
+  toEmail: string;
+  toName: string;
+  requesterName: string;
+  friendsUrl: string;
+}): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const subject = `${args.requesterName} wants to hang with you on letshangg`;
+  const html = renderFriendRequestHtml({
+    toName: args.toName,
+    requesterName: args.requesterName,
+    friendsUrl: args.friendsUrl,
+  });
+
+  try {
+    const res = await fetch(RESEND_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM_ADDRESS,
+        to: args.toEmail,
+        subject,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("resend send failed", res.status, await res.text());
+    }
+  } catch (err) {
+    console.error("resend send threw", err);
+  }
+}
+
+function renderFriendRequestHtml(args: {
+  toName: string;
+  requesterName: string;
+  friendsUrl: string;
+}): string {
+  const safeName = escapeHtml(args.toName);
+  const safeRequester = escapeHtml(args.requesterName);
+  const safeUrl = escapeAttr(args.friendsUrl);
+
+  return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${safeRequester} wants to hang</title>
+</head>
+<body style="margin:0;padding:0;background:#f7f5f2;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',Helvetica,Arial,sans-serif;color:#1a1714;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f7f5f2;">
+    <tr>
+      <td align="center" style="padding:48px 24px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;">
+          <tr>
+            <td style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#7a7570;">
+              letshangg
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:12px;">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#e8855a;vertical-align:middle;"></span>
+              <span style="margin-left:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;color:#1a1714;">Friend request</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:24px;font-family:'DM Serif Display',Georgia,serif;font-size:34px;line-height:1.15;color:#1a1714;">
+              ${safeName}, ${safeRequester} wants to hang.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:24px;font-size:16px;line-height:1.5;color:#7a7570;">
+              Accept the request to start getting matched on things you'd both enjoy.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:32px;">
+              <a href="${safeUrl}" style="display:inline-block;background:#1a1714;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:14px;font-weight:600;">See friend request</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:48px;font-size:11px;color:#7a7570;">
+              <a href="${SITE_URL}" style="color:#7a7570;text-decoration:none;">letshangg.app</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replaceAll("&", "&amp;")
