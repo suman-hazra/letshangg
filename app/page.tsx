@@ -19,31 +19,28 @@ const lora = Lora({
   variable: "--font-landing-note",
 });
 
+const BASE = "https://pdtdpyyzgjrslceuqkje.supabase.co/storage/v1/object/public/assets/carousel";
+
 const hangCards = [
   {
     label: "Coffee",
-    icon: "☕",
-    gradient: "from-[#FFF3C9] to-[#FFE3A6]",
+    image: `${BASE}/coffee.jpg`,
   },
   {
     label: "Hiking",
-    icon: "🥾",
-    gradient: "from-[#DBF1E0] to-[#BFE6CC]",
+    image: `${BASE}/hiking.jpg`,
   },
   {
     label: "Movies",
-    icon: "🎬",
-    gradient: "from-[#D2E9FB] to-[#AFD6F3]",
+    image: `${BASE}/movies.jpg`,
   },
   {
     label: "Eating out",
-    icon: "🍜",
-    gradient: "from-[#FFE5CC] to-[#FBCBA3]",
+    image: `${BASE}/eating.jpg`,
   },
   {
     label: "Drinks",
-    icon: "🍹",
-    gradient: "from-[#FBD9CB] to-[#F6BDA8]",
+    image: `${BASE}/drinks.jpg`,
   },
 ];
 
@@ -92,19 +89,14 @@ export default function Landing() {
                 key={card.label}
                 className="w-[var(--card-w)] shrink-0 snap-start"
               >
-                <div
-                  className={`relative flex h-[var(--card-h)] items-center justify-center rounded-[22px] bg-gradient-to-br ${card.gradient} shadow-[inset_0_0_0_1px_rgba(255,255,255,0.65)]`}
-                >
-                  <span className="absolute right-2.5 top-2.5 inline-flex h-6 items-center gap-1 rounded-full bg-white/55 px-2 font-[family-name:var(--font-landing-sans)] text-[9px] font-extrabold uppercase leading-none text-[#3A5263]">
-                    <PhotoIcon />
-                    Photo
-                  </span>
-                  <span
-                    className="leading-none drop-shadow-sm"
-                    style={{ fontSize: "var(--card-icon-size)" }}
-                  >
-                    {card.icon}
-                  </span>
+                <div className="relative h-[var(--card-h)] overflow-hidden rounded-[22px] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]">
+                  <Image
+                    src={card.image}
+                    alt={card.label}
+                    fill
+                    className="object-cover"
+                    sizes="148px"
+                  />
                 </div>
                 <p className="mt-[var(--card-label-gap)] font-[family-name:var(--font-landing-sans)] text-sm font-bold leading-[1.4] text-[#284052]">
                   {card.label}
