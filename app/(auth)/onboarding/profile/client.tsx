@@ -13,22 +13,24 @@ export function UsernameField({ defaultValue }: { defaultValue: string }) {
 
   return (
     <>
-      <div className="flex items-center">
-        <span className="mr-1 font-[family-name:var(--font-landing-sans)] text-[15px] font-semibold text-[#8CC0EB]">
-          @
-        </span>
-        <input
-          name="username"
-          type="text"
-          placeholder="e.g. john123"
-          required
-          pattern="[a-z0-9_]{3,20}"
-          title="3-20 chars: lowercase letters, numbers, underscores"
-          suppressHydrationWarning
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          className="flex-1 bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
-        />
+      <div className="rounded-2xl border-[1.5px] border-[rgba(140,192,235,0.4)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.5)]">
+        <div className="flex items-center">
+          <span className="mr-1 font-[family-name:var(--font-landing-sans)] text-[15px] font-semibold text-[#8CC0EB]">
+            @
+          </span>
+          <input
+            name="username"
+            type="text"
+            placeholder="e.g. john123"
+            required
+            pattern="[a-z0-9_]{3,20}"
+            title="3-20 chars: lowercase letters, numbers, underscores"
+            suppressHydrationWarning
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            className="flex-1 bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
+          />
+        </div>
       </div>
       {shouldShowHint && (
         <p className="mt-1.5 font-[family-name:var(--font-landing-sans)] text-[11.5px] font-medium text-[#9AACBA]">

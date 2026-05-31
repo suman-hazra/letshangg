@@ -88,13 +88,13 @@ export default async function ProfilePage({
 
   return (
     <main
-      className={`${poppins.variable} ${jakarta.variable} ${lora.variable} relative min-h-dvh overflow-hidden bg-[linear-gradient(170deg,#FFF8D6_0%,#FFEAD2_34%,#DCEEFA_72%,#CFE7FB_100%)]`}
+      className={`${poppins.variable} ${jakarta.variable} ${lora.variable} landing-screen relative h-[100svh] max-h-[100dvh] overflow-hidden bg-[linear-gradient(170deg,#FFF8D6_0%,#FFEAD2_34%,#DCEEFA_72%,#CFE7FB_100%)]`}
     >
       {/* Blur blobs */}
       <div className="pointer-events-none absolute left-1/2 -top-24 h-[380px] w-[420px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,#FFE08A_0%,rgba(255,224,138,0)_68%)] opacity-50 blur-3xl" />
       <div className="pointer-events-none absolute left-1/2 bottom-0 h-[340px] w-[420px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,#9ACDF2_0%,rgba(154,205,242,0)_70%)] opacity-45 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-dvh max-w-[430px] flex-col px-7 pt-12 pb-0">
+      <div className="relative mx-auto flex h-full max-w-[430px] flex-col px-7 pt-12 pb-[var(--page-pad-b)]">
 
         {/* Top bar */}
         <div className="flex items-center">
@@ -123,31 +123,33 @@ export default async function ProfilePage({
         <form
           action={saveProfile}
           suppressHydrationWarning
-          className="mt-4 flex flex-col gap-3"
+          className="mt-7 flex flex-1 flex-col gap-3"
         >
 
           {/* Name */}
-          <div className="rounded-2xl border border-[rgba(140,192,235,0.4)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.5)]">
+          <div>
             <div className="mb-2 flex items-center gap-1.5">
               <UserIcon />
               <span className="font-[family-name:var(--font-landing-sans)] text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#5C7A8A]">
                 Name
               </span>
             </div>
-            <input
-              name="display_name"
-              type="text"
-              placeholder="e.g. John"
-              required
-              maxLength={40}
-              autoFocus
-              suppressHydrationWarning
-              className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
-            />
+            <div className="rounded-2xl border-[1.5px] border-[rgba(140,192,235,0.4)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.5)]">
+              <input
+                name="display_name"
+                type="text"
+                placeholder="e.g. John"
+                required
+                maxLength={40}
+                autoFocus
+                suppressHydrationWarning
+                className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
+              />
+            </div>
           </div>
 
           {/* Username */}
-          <div className="rounded-2xl border border-[rgba(140,192,235,0.4)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.5)]">
+          <div>
             <div className="mb-2 flex items-center gap-1.5">
               <AtIcon />
               <span className="font-[family-name:var(--font-landing-sans)] text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#5C7A8A]">
@@ -164,7 +166,7 @@ export default async function ProfilePage({
           </div>
 
           {/* City */}
-          <div className="rounded-2xl border border-[rgba(140,192,235,0.25)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.3)]">
+          <div>
             <div className="mb-2 flex items-center gap-1.5">
               <MapPinIcon />
               <span className="font-[family-name:var(--font-landing-sans)] text-[11.5px] font-bold uppercase tracking-[0.08em] text-[#5C7A8A]">
@@ -174,15 +176,17 @@ export default async function ProfilePage({
                 Optional
               </span>
             </div>
-            <input
-              name="city"
-              type="text"
-              placeholder="e.g. San Francisco"
-              maxLength={60}
-              list="cities"
-              suppressHydrationWarning
-              className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
-            />
+            <div className="rounded-2xl border-[1.5px] border-[rgba(140,192,235,0.25)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.3)]">
+              <input
+                name="city"
+                type="text"
+                placeholder="e.g. San Francisco"
+                maxLength={60}
+                list="cities"
+                suppressHydrationWarning
+                className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
+              />
+            </div>
           </div>
 
           <datalist id="cities">
@@ -200,18 +204,16 @@ export default async function ProfilePage({
           {/* CTA */}
           <button
             type="submit"
-            className="flex w-full items-center justify-between rounded-full bg-[linear-gradient(135deg,#8CC0EB_0%,#6FB0E6_100%)] px-6 py-[19px] shadow-[0_14px_30px_-8px_rgba(111,176,230,0.9)] transition active:scale-[0.97]"
+            className="group mt-auto flex w-full shrink-0 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#8CC0EB_0%,#6FB0E6_100%)] px-7 py-[var(--cta-py)] font-[family-name:var(--font-landing-sans)] text-lg font-extrabold leading-[1.4] text-white shadow-[0_14px_30px_-8px_rgba(111,176,230,0.95)] transition active:scale-[0.97]"
           >
-            <span className="font-[family-name:var(--font-landing-sans)] text-[17.5px] font-extrabold text-white">
-              Continue
-            </span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[rgba(255,255,255,0.25)]">
+            Continue
+            <span className="grid size-7 place-items-center rounded-full bg-white/25 transition group-active:translate-x-0.5">
               <ArrowRightIcon />
-            </div>
+            </span>
           </button>
 
           {/* Footnote */}
-          <p className="mt-1 text-center font-[family-name:var(--font-landing-note)] text-[13px] text-[#7A96A8]">
+          <p className="mt-[var(--foot-gap)] shrink-0 text-center font-[family-name:var(--font-landing-note)] text-[13.5px] font-normal italic leading-[1.4] text-[#4A6173]">
             you can update this anytime.
           </p>
 
@@ -250,9 +252,19 @@ function MapPinIcon() {
 
 function ArrowRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
+    <svg
+      aria-hidden="true"
+      className="size-4"
+      fill="none"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M3.5 8h8m0 0-3-3m3 3-3 3"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
     </svg>
   );
 }
