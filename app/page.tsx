@@ -124,35 +124,6 @@ export default function Landing() {
   );
 }
 
-function PhotoIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="size-2.5"
-      fill="none"
-      viewBox="0 0 10 10"
-    >
-      <rect
-        height="7"
-        rx="1.4"
-        stroke="currentColor"
-        strokeWidth="1"
-        width="7"
-        x="1.5"
-        y="1.5"
-      />
-      <path
-        d="m2.8 6.9 1.4-1.5 1 1 1.7-2 1.1 1.2"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1"
-      />
-      <circle cx="4" cy="3.7" fill="currentColor" r=".6" />
-    </svg>
-  );
-}
-
 function ArrowIcon() {
   return (
     <svg
