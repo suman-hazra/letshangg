@@ -55,6 +55,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${dmSerif.variable} ${dmSans.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full">

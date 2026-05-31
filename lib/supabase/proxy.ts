@@ -45,8 +45,12 @@ export async function updateSession(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
+  const isDevPreview =
+    process.env.NODE_ENV !== "production" &&
+    pathname === "/onboarding/profile" &&
+    request.nextUrl.searchParams.get("preview") === "1";
 
-  if (!user && !isPublic) {
+  if (!user && !isPublic && !isDevPreview) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     // Preserve the original destination so post-login routes back there.

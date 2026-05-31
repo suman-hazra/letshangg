@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Lora, Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { saveProfile } from "./actions";
-import { OnboardingAvatarUploader } from "./client";
+import { OnboardingAvatarUploader, UsernameField } from "./client";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -55,23 +55,27 @@ const CITIES = [
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; preview?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, preview } = await searchParams;
+  const isPreview = process.env.NODE_ENV !== "production" && preview === "1";
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user && !isPreview) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, username, display_name")
-    .eq("id", user.id)
-    .maybeSingle();
+  const userId = user?.id ?? "00000000-0000-4000-8000-000000000000";
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
 
-  if (!profile) {
+  if (user && !profile) {
     await supabase.from("profiles").insert({
       id: user.id,
       username: `user_${user.id.replace(/-/g, "").slice(0, 12)}`,
@@ -90,45 +94,37 @@ export default async function ProfilePage({
       <div className="pointer-events-none absolute left-1/2 -top-24 h-[380px] w-[420px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,#FFE08A_0%,rgba(255,224,138,0)_68%)] opacity-50 blur-3xl" />
       <div className="pointer-events-none absolute left-1/2 bottom-0 h-[340px] w-[420px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,#9ACDF2_0%,rgba(154,205,242,0)_70%)] opacity-45 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-dvh max-w-[430px] flex-col px-7 pt-12 pb-10">
+      <div className="relative mx-auto flex min-h-dvh max-w-[430px] flex-col px-7 pt-12 pb-0">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between">
-          <div className="relative h-10 w-[90px] overflow-hidden opacity-90">
+        <div className="flex items-center">
+          <div className="relative h-8 w-[57px] -translate-y-2 overflow-hidden opacity-90">
             <Image
-              src="https://pdtdpyyzgjrslceuqkje.supabase.co/storage/v1/object/public/assets/logo.png"
+              src="/logo-mark.png"
               alt="letshangg"
-              width={1536}
-              height={1024}
+              fill
+              sizes="57px"
               priority
-              className="absolute left-1/2 top-0 h-auto w-[112px] max-w-none -translate-x-1/2 -translate-y-[17px]"
+              className="object-contain"
             />
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-1.5 w-5 rounded-full bg-[#8CC0EB]" />
-            <div className="h-1.5 w-5 rounded-full bg-[#8CC0EB]" />
-            <div className="h-1.5 w-5 rounded-full bg-[rgba(140,192,235,0.3)]" />
           </div>
         </div>
 
-        {/* Headline */}
-        <h1 className="mt-7 font-[family-name:var(--font-landing-heading)] text-[31px] font-extrabold leading-[1.1] tracking-[-0.025em] text-[#15293A]">
-          Who are you,
-          <br />
-          really?
-        </h1>
-
-        <p className="mt-2.5 font-[family-name:var(--font-landing-sans)] text-[14.5px] font-medium leading-[1.625] text-[#4A6173]">
+        <p className="mt-4 font-[family-name:var(--font-landing-sans)] text-[14.5px] font-medium leading-[1.625] text-[#4A6173]">
           Set up your profile so friends know it&apos;s you.
         </p>
 
         {/* Avatar uploader */}
         <div className="mt-6">
-          <OnboardingAvatarUploader userId={user.id} />
+          <OnboardingAvatarUploader userId={userId} />
         </div>
 
         {/* Form */}
-        <form action={saveProfile} className="mt-7 flex flex-1 flex-col gap-4">
+        <form
+          action={saveProfile}
+          suppressHydrationWarning
+          className="mt-4 flex flex-col gap-3"
+        >
 
           {/* Name */}
           <div className="rounded-2xl border border-[rgba(140,192,235,0.4)] bg-white px-4 py-[14px] shadow-[0_2px_10px_-6px_rgba(140,192,235,0.5)]">
@@ -141,15 +137,13 @@ export default async function ProfilePage({
             <input
               name="display_name"
               type="text"
-              placeholder="e.g. Suman"
+              placeholder="e.g. John"
               required
               maxLength={40}
               autoFocus
+              suppressHydrationWarning
               className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
             />
-            <p className="mt-1.5 font-[family-name:var(--font-landing-sans)] text-[11.5px] font-medium text-[#9AACBA]">
-              how friends see you on hang cards
-            </p>
           </div>
 
           {/* Username */}
@@ -160,28 +154,13 @@ export default async function ProfilePage({
                 Username
               </span>
             </div>
-            <div className="flex items-center">
-              <span className="mr-1 font-[family-name:var(--font-landing-sans)] text-[15px] font-semibold text-[#8CC0EB]">
-                @
-              </span>
-              <input
-                name="username"
-                type="text"
-                placeholder="e.g. suman"
-                required
-                pattern="[a-z0-9_]{3,20}"
-                title="3-20 chars: lowercase letters, numbers, underscores"
-                defaultValue={
-                  profile?.username && !profile.username.startsWith("user_")
-                    ? profile.username
-                    : ""
-                }
-                className="flex-1 bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
-              />
-            </div>
-            <p className="mt-1.5 font-[family-name:var(--font-landing-sans)] text-[11.5px] font-medium text-[#9AACBA]">
-              lowercase, no spaces · how friends find you
-            </p>
+            <UsernameField
+              defaultValue={
+                profile?.username && !profile.username.startsWith("user_")
+                  ? profile.username
+                  : ""
+              }
+            />
           </div>
 
           {/* City */}
@@ -201,11 +180,9 @@ export default async function ProfilePage({
               placeholder="e.g. San Francisco"
               maxLength={60}
               list="cities"
+              suppressHydrationWarning
               className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
             />
-            <p className="mt-1.5 font-[family-name:var(--font-landing-sans)] text-[11.5px] font-medium text-[#9AACBA]">
-              helps match you with nearby friends
-            </p>
           </div>
 
           <datalist id="cities">
@@ -219,8 +196,6 @@ export default async function ProfilePage({
               {decodeURIComponent(error)}
             </p>
           )}
-
-          <div className="min-h-6 flex-1" />
 
           {/* CTA */}
           <button

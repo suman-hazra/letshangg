@@ -60,7 +60,11 @@ export default async function LoginPage({
             you do.
           </p>
 
-          <form action={signInWithGoogle} className="mt-20 w-full">
+          <form
+            action={signInWithGoogle}
+            suppressHydrationWarning
+            className="mt-20 w-full"
+          >
             {next && <input type="hidden" name="next" value={next} />}
             <button
               type="submit"

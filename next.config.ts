@@ -3,6 +3,10 @@ import path from "node:path";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins:
+    process.env.NEXT_ALLOWED_DEV_ORIGINS?.split(",").map((origin) =>
+      origin.trim(),
+    ) ?? [],
   turbopack: {
     root: path.resolve(__dirname),
   },

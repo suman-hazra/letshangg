@@ -7,6 +7,38 @@ import { saveOnboardingAvatar } from "./actions";
 const MAX_BYTES = 2_000_000;
 const ACCEPTED_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
+export function UsernameField({ defaultValue }: { defaultValue: string }) {
+  const [value, setValue] = useState(defaultValue);
+  const shouldShowHint = value.length > 0;
+
+  return (
+    <>
+      <div className="flex items-center">
+        <span className="mr-1 font-[family-name:var(--font-landing-sans)] text-[15px] font-semibold text-[#8CC0EB]">
+          @
+        </span>
+        <input
+          name="username"
+          type="text"
+          placeholder="e.g. john123"
+          required
+          pattern="[a-z0-9_]{3,20}"
+          title="3-20 chars: lowercase letters, numbers, underscores"
+          suppressHydrationWarning
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          className="flex-1 bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
+        />
+      </div>
+      {shouldShowHint && (
+        <p className="mt-1.5 font-[family-name:var(--font-landing-sans)] text-[11.5px] font-medium text-[#9AACBA]">
+          lowercase letters, numbers, or underscores · 3-20 characters
+        </p>
+      )}
+    </>
+  );
+}
+
 export function OnboardingAvatarUploader({ userId }: { userId: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
