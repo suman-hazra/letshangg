@@ -44,7 +44,7 @@ export function DesktopGate({ children }: { children: React.ReactNode }) {
         </div>
 
         <h1 className="mt-8 max-w-md text-4xl font-extrabold leading-[1.1] tracking-tight text-[#15293A]">
-          letshangg is a mobile experience.
+          Letshangg is a mobile experience.
         </h1>
 
         <p className="mt-5 max-w-sm text-[16px] font-medium leading-relaxed text-[#4A6173]">
