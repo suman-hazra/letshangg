@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, DM_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "./_components/posthog-provider";
@@ -20,8 +20,30 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
+  applicationName: "letshangg",
   title: "letshangg",
   description: "An AI matchmaker for hangouts. No awkward texts.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "letshangg",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/pwa-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/pwa-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FFF8D6",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

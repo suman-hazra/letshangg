@@ -18,13 +18,44 @@ test.describe("public paths", () => {
   test("landing page renders the editorial composition", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByText("letshangg")).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /plans that/i }),
+      page.getByRole("heading", {
+        name: /plans feel easier\s+when they're mutual/i,
+      }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /get started/i }),
+      page.getByRole("link", { name: /find a hang/i }),
     ).toBeVisible();
+  });
+
+  test("PWA manifest is public and installable", async ({ page }) => {
+    const response = await page.goto("/manifest.webmanifest");
+
+    expect(response?.ok()).toBe(true);
+    expect(await response?.headerValue("content-type")).toContain(
+      "application/manifest+json",
+    );
+
+    const manifest = JSON.parse(await page.locator("body").innerText());
+    expect(manifest).toMatchObject({
+      name: "letshangg",
+      short_name: "letshangg",
+      start_url: "/",
+      display: "standalone",
+    });
+    expect(manifest.icons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          src: "/pwa-icon-192.png",
+          sizes: "192x192",
+        }),
+        expect.objectContaining({
+          src: "/pwa-maskable-512.png",
+          sizes: "512x512",
+          purpose: "maskable",
+        }),
+      ]),
+    );
   });
 
   test("login page renders the Google CTA", async ({ page }) => {
@@ -70,18 +101,17 @@ test.describe("public paths", () => {
   }) => {
     await page.goto("/");
 
-    // Background is the warm off-white token.
-    const bgColor = await page.evaluate(() =>
-      getComputedStyle(document.body).backgroundColor,
+    // Landing uses the bright PWA opening-screen gradient.
+    const bgImage = await page.evaluate(() =>
+      getComputedStyle(document.querySelector("main")!).backgroundImage,
     );
-    // Either rgb(247, 245, 242) or the same hex resolved.
-    expect(bgColor).toMatch(/247.*245.*242/);
+    expect(bgImage).toContain("linear-gradient");
 
-    // Headline uses our DM Serif Display variable.
+    // Headline uses the landing Poppins variable.
     const headlineFont = await page.evaluate(() => {
       const h1 = document.querySelector("h1");
       return h1 ? getComputedStyle(h1).fontFamily : "";
     });
-    expect(headlineFont.toLowerCase()).toContain("dm serif");
+    expect(headlineFont.toLowerCase()).toContain("poppins");
   });
 });
