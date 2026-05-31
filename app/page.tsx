@@ -59,7 +59,7 @@ export default function Landing() {
       <div className="relative mx-auto flex h-full w-full max-w-[430px] flex-col text-center">
         <div className="relative mx-auto h-[var(--logo-h)] w-[220px] shrink-0 overflow-hidden">
           <Image
-            src="/ChatGPT Image May 30, 2026, 03_45_06 PM.png"
+            src="https://pdtdpyyzgjrslceuqkje.supabase.co/storage/v1/object/public/assets/logo.png"
             alt="letshangg"
             width={1536}
             height={1024}
