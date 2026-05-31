@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, DM_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "./_components/posthog-provider";
+import { DesktopGate } from "./_components/desktop-gate";
 
 const dmSerif = DM_Serif_Display({
   weight: "400",
@@ -57,7 +58,9 @@ export default function RootLayout({
       className={`${dmSerif.variable} ${dmSans.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <PostHogProvider>{children}</PostHogProvider>
+        <PostHogProvider>
+          <DesktopGate>{children}</DesktopGate>
+        </PostHogProvider>
       </body>
     </html>
   );

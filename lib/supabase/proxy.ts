@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   "/manifest.webmanifest",
   "/terms",
   "/privacy",
+  "/about",
+  "/contribute",
 ];
 
 export async function updateSession(request: NextRequest) {
