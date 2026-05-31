@@ -88,8 +88,8 @@ export default function TermsPage() {
             <h2 className="mb-3 text-base font-semibold text-[#1A1714]">9. Contact</h2>
             <p>
               Questions? Reach us at{" "}
-              <a href="mailto:sumanhazra10@gmail.com" className="text-[#E8855A] hover:underline">
-                sumanhazra10@gmail.com
+              <a href="mailto:suman@letshangg.app" className="text-[#E8855A] hover:underline">
+                suman@letshangg.app
               </a>
               .
             </p>
