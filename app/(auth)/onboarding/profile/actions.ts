@@ -8,6 +8,7 @@ const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 export async function saveProfile(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   const display_name = String(formData.get("display_name") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim() || null;
 
   if (!USERNAME_RE.test(username)) {
     redirect(
@@ -32,11 +33,10 @@ export async function saveProfile(formData: FormData) {
 
   const { error } = await supabase
     .from("profiles")
-    .update({ username, display_name })
+    .update({ username, display_name, city })
     .eq("id", user.id);
 
   if (error) {
-    // Unique violation on username
     if (error.code === "23505") {
       redirect(
         `/onboarding/profile?error=${encodeURIComponent(
@@ -50,4 +50,20 @@ export async function saveProfile(formData: FormData) {
   }
 
   redirect("/onboarding/preferences");
+}
+
+export async function saveOnboardingAvatar(formData: FormData) {
+  const avatar_url = String(formData.get("avatar_url") ?? "").trim();
+  if (!avatar_url) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase
+    .from("profiles")
+    .update({ avatar_url })
+    .eq("id", user.id);
 }

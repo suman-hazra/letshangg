@@ -21,6 +21,7 @@ export type Database = {
           username: string;
           display_name: string | null;
           avatar_url: string | null;
+          city: string | null;
           created_at: string;
         };
         Insert: {
@@ -28,6 +29,7 @@ export type Database = {
           username: string;
           display_name?: string | null;
           avatar_url?: string | null;
+          city?: string | null;
           created_at?: string;
         };
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           username?: string;
           display_name?: string | null;
           avatar_url?: string | null;
+          city?: string | null;
           created_at?: string;
         };
         Relationships: [];

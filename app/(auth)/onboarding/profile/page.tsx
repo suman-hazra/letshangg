@@ -1,6 +1,37 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { saveProfile } from "./actions";
+import { OnboardingAvatarUploader } from "./client";
+
+const CITIES = [
+  // United States
+  "New York City", "Los Angeles", "Chicago", "Houston", "Phoenix",
+  "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose",
+  "Austin", "Jacksonville", "Fort Worth", "Columbus", "Charlotte",
+  "Indianapolis", "San Francisco", "Seattle", "Denver", "Nashville",
+  "Oklahoma City", "El Paso", "Washington DC", "Las Vegas", "Louisville",
+  "Memphis", "Portland", "Baltimore", "Milwaukee", "Albuquerque",
+  "Tucson", "Fresno", "Sacramento", "Kansas City", "Atlanta",
+  "Miami", "Minneapolis", "Raleigh", "Tampa", "New Orleans",
+  "Cleveland", "Detroit", "Boston", "Pittsburgh", "Salt Lake City",
+  // Canada
+  "Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa", "Edmonton",
+  // United Kingdom
+  "London", "Manchester", "Birmingham", "Glasgow", "Liverpool", "Edinburgh",
+  // Europe
+  "Paris", "Berlin", "Madrid", "Rome", "Amsterdam", "Barcelona",
+  "Brussels", "Vienna", "Zurich", "Stockholm", "Oslo", "Copenhagen",
+  "Lisbon", "Dublin", "Warsaw", "Prague", "Budapest", "Athens",
+  // Asia-Pacific
+  "Tokyo", "Seoul", "Shanghai", "Beijing", "Hong Kong", "Singapore",
+  "Mumbai", "Delhi", "Bangalore", "Sydney", "Melbourne", "Auckland",
+  // Middle East & Africa
+  "Dubai", "Abu Dhabi", "Tel Aviv", "Istanbul", "Cairo", "Lagos",
+  "Nairobi", "Johannesburg", "Cape Town",
+  // Latin America
+  "São Paulo", "Rio de Janeiro", "Buenos Aires", "Bogotá", "Lima",
+  "Santiago", "Mexico City",
+];
 
 export default async function ProfilePage({
   searchParams,
@@ -15,7 +46,6 @@ export default async function ProfilePage({
 
   if (!user) redirect("/login");
 
-  // Defensive: trigger may have failed; ensure profile row exists.
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, username, display_name")
@@ -31,7 +61,6 @@ export default async function ProfilePage({
       });
   }
 
-  // Already onboarded? Skip ahead.
   if (profile?.display_name) {
     redirect("/onboarding/preferences");
   }
@@ -50,10 +79,15 @@ export default async function ProfilePage({
         </h1>
 
         <p className="mt-4 font-sans text-base text-muted text-center">
-          Pick a username and a name your friends would recognize.
+          Set up your profile so friends know it&apos;s you.
         </p>
 
-        <form action={saveProfile} className="mt-10 space-y-5">
+        {/* Avatar uploader — lives outside the form, persists independently */}
+        <div className="mt-10 flex justify-center">
+          <OnboardingAvatarUploader userId={user.id} />
+        </div>
+
+        <form action={saveProfile} className="mt-8 space-y-5">
           <Field
             label="Username"
             name="username"
@@ -78,6 +112,20 @@ export default async function ProfilePage({
             required
             maxLength={40}
           />
+
+          <Field
+            label="City"
+            name="city"
+            placeholder="e.g. San Francisco"
+            hint="optional — helps match you with nearby friends."
+            maxLength={60}
+            list="cities"
+          />
+          <datalist id="cities">
+            {CITIES.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
 
           {error && (
             <p className="font-sans text-sm text-danger">
@@ -108,6 +156,7 @@ function Field({
   pattern,
   maxLength,
   title,
+  list,
 }: {
   label: string;
   name: string;
@@ -119,10 +168,18 @@ function Field({
   pattern?: string;
   maxLength?: number;
   title?: string;
+  list?: string;
 }) {
   return (
     <label className="block">
-      <span className="font-sans text-sm font-medium text-ink">{label}</span>
+      <span className="font-sans text-sm font-medium text-ink">
+        {label}
+        {!required && (
+          <span className="ml-1.5 font-sans text-xs font-normal text-muted">
+            optional
+          </span>
+        )}
+      </span>
       <input
         name={name}
         type="text"
@@ -133,6 +190,7 @@ function Field({
         pattern={pattern}
         maxLength={maxLength}
         title={title}
+        list={list}
         className="mt-1.5 w-full h-12 px-4 rounded-2xl bg-surface border border-line font-sans text-base text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
       />
       {hint && (
