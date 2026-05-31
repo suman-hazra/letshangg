@@ -7,6 +7,8 @@ const PUBLIC_PATHS = [
   "/login",
   "/auth/callback",
   "/manifest.webmanifest",
+  "/terms",
+  "/privacy",
 ];
 
 export async function updateSession(request: NextRequest) {
