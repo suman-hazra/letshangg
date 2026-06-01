@@ -83,7 +83,7 @@ export default async function ProfilePage({
   }
 
   if (profile?.display_name) {
-    redirect("/onboarding/preferences");
+    redirect("/onboarding/preferences-intro");
   }
 
   return (

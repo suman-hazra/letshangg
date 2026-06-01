@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     .eq("user_id", user.id);
 
   if (!prefCount || prefCount === 0) {
-    return NextResponse.redirect(`${origin}/onboarding/preferences`);
+    return NextResponse.redirect(`${origin}/onboarding/preferences-intro`);
   }
 
   return NextResponse.redirect(`${origin}${next}`);

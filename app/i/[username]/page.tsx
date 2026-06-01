@@ -128,7 +128,7 @@ export default async function InviteAcceptPage({
         title={`You're now friends with ${inviter.display_name ?? inviter.username}.`}
         body="One more step — tell us what kinds of hangs you're up for."
         ctaLabel="Pick preferences"
-        ctaHref="/onboarding/preferences"
+        ctaHref="/onboarding/preferences-intro"
         accent
       />
     );

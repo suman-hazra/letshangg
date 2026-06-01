@@ -49,7 +49,7 @@ export async function saveProfile(formData: FormData) {
     );
   }
 
-  redirect("/onboarding/preferences");
+  redirect("/onboarding/preferences-intro");
 }
 
 export async function saveOnboardingAvatar(formData: FormData) {
