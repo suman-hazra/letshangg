@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
@@ -145,13 +146,21 @@ export default async function PreferencesPage({
       style={{
         minHeight: "100vh",
         height: "100dvh",
-        backgroundImage: activityImage
-          ? `url("${activityImage}")`
+        background: activityImage
+          ? undefined
           : "linear-gradient(165deg, #7FCCF6 0%, #43AEEA 38%, #1E8FD2 72%, #0D6BA8 100%)",
-        backgroundPosition: "center",
-        backgroundSize: "cover",
       }}
     >
+      {activityImage && (
+        <Image
+          src={activityImage}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+      )}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
