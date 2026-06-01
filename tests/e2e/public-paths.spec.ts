@@ -58,6 +58,23 @@ test.describe("public paths", () => {
     );
   });
 
+  test("desktop pages do not advertise PWA install", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/");
+
+    await expect(page.locator('head link[rel="manifest"]')).toHaveCount(0);
+  });
+
+  test("mobile pages advertise PWA install", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    await expect(page.locator('head link[rel="manifest"]')).toHaveAttribute(
+      "href",
+      "/manifest.webmanifest",
+    );
+  });
+
   test("login page renders the Google CTA", async ({ page }) => {
     await page.goto("/login");
 

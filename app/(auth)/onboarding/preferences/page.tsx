@@ -52,36 +52,36 @@ const QUIZ_IMAGES: Record<string, string> = {
 };
 
 const PREVIEW_ACTIVITIES = [
-  "Grab coffee",
-  "Get pizza",
-  "Watch a movie",
-  "Grab drinks",
-  "Go to a house party / get-together",
-  "Go dancing / night out",
-  "Take a workout class",
-  "Bike ride",
-  "Play a pickup sport",
-  "Go rock climbing",
-  "Go for a hike",
-  "Hang at the park",
-  "Sunset walk",
-  "Beach / waterfront day",
-  "Catch a live show",
-  "Visit a museum",
-  "Bookstore browse",
-  "See theater / comedy",
-  "Cook a meal together",
-  "Take an art / pottery class",
-  "Go thrifting",
-  "Go bowling",
-  "Game night",
-  "Arcade / mini-golf",
-  "Ice cream run",
-  "Try a new restaurant",
-  "Spa / self-care day",
-  "Day trip / road trip",
-  "Escape room",
-  "Festival / street fair",
+  { label: "Grab coffee", activity_key: "coffee" },
+  { label: "Get pizza", activity_key: "pizza" },
+  { label: "Watch a movie", activity_key: "movie" },
+  { label: "Grab drinks", activity_key: "drinks" },
+  { label: "Go to a house party / get-together", activity_key: "house_party" },
+  { label: "Go dancing / night out", activity_key: "dancing" },
+  { label: "Take a workout class", activity_key: "workout" },
+  { label: "Bike ride", activity_key: "bike" },
+  { label: "Play a pickup sport", activity_key: "pickup_sport" },
+  { label: "Go rock climbing", activity_key: "rock_climbing" },
+  { label: "Go for a hike", activity_key: "hike" },
+  { label: "Hang at the park", activity_key: "park" },
+  { label: "Sunset walk", activity_key: "sunset_walk" },
+  { label: "Beach / waterfront day", activity_key: "beach" },
+  { label: "Catch a live show", activity_key: "show" },
+  { label: "Visit a museum", activity_key: "museum" },
+  { label: "Bookstore browse", activity_key: "bookstore" },
+  { label: "See theater / comedy", activity_key: "theater_comedy" },
+  { label: "Cook a meal together", activity_key: "cooking" },
+  { label: "Take an art / pottery class", activity_key: "pottery_class" },
+  { label: "Go thrifting", activity_key: "thrift" },
+  { label: "Go bowling", activity_key: "bowling" },
+  { label: "Game night", activity_key: "game_night" },
+  { label: "Arcade / mini-golf", activity_key: "arcade_mini_golf" },
+  { label: "Ice cream run", activity_key: "ice_cream" },
+  { label: "Try a new restaurant", activity_key: "restaurant" },
+  { label: "Spa / self-care day", activity_key: "self_care" },
+  { label: "Day trip / road trip", activity_key: "day_trip" },
+  { label: "Escape room", activity_key: "escape_room" },
+  { label: "Festival / street fair", activity_key: "festival" },
 ];
 
 export default async function PreferencesPage({
@@ -97,10 +97,10 @@ export default async function PreferencesPage({
   } = await supabase.auth.getUser();
   if (!user && !isPreview) redirect("/login");
 
-  const previewPrefs = PREVIEW_ACTIVITIES.map((label, index) => ({
+  const previewPrefs = PREVIEW_ACTIVITIES.map((activity, index) => ({
     id: `preview-${index + 1}`,
-    label,
-    activity_key: `preview_${index + 1}`,
+    label: activity.label,
+    activity_key: activity.activity_key,
     quiz_order: index + 1,
   }));
 
@@ -142,7 +142,7 @@ export default async function PreferencesPage({
 
   return (
     <main
-      className={`${poppins.variable} ${jakarta.variable} fixed inset-0 w-full overflow-hidden`}
+      className={`${poppins.variable} ${jakarta.variable} fixed left-0 top-0 h-dvh w-full overflow-hidden`}
       style={{
         minHeight: "100vh",
         height: "100dvh",
@@ -189,13 +189,13 @@ export default async function PreferencesPage({
         </div>
       )}
 
-      <div className="absolute bottom-[194px] left-1/2 max-w-[calc(100%-56px)] -translate-x-1/2 rounded-full border border-white/60 bg-white/85 px-7 py-3.5 text-center shadow-[0_14px_34px_-12px_rgba(13,40,62,0.45)] backdrop-blur-xl">
+      <div className="absolute bottom-[190px] left-1/2 max-w-[calc(100%-56px)] -translate-x-1/2 rounded-full border border-white/60 bg-white/85 px-7 py-3.5 text-center shadow-[0_14px_34px_-12px_rgba(13,40,62,0.45)] backdrop-blur-xl">
         <h1 className="whitespace-nowrap font-[family-name:var(--font-quiz-heading)] text-[21px] font-extrabold leading-tight tracking-[-0.02em] text-[#15293A]">
           {card.label}
         </h1>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-center gap-7 px-5 pb-9">
+      <div className="absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+56px)] flex items-end justify-center gap-7 px-5">
         <form action={saveVerdict}>
           <input type="hidden" name="preference_id" value={card.id} />
           <input type="hidden" name="verdict" value="nay" />

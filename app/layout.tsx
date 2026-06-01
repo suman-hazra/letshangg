@@ -3,6 +3,7 @@ import { DM_Serif_Display, DM_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "./_components/posthog-provider";
 import { DesktopGate } from "./_components/desktop-gate";
+import { MobilePwaManifest } from "./_components/mobile-pwa-manifest";
 
 const dmSerif = DM_Serif_Display({
   weight: "400",
@@ -24,7 +25,6 @@ export const metadata: Metadata = {
   applicationName: "letshangg",
   title: "letshangg",
   description: "An AI matchmaker for hangouts. No awkward texts.",
-  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "letshangg",
@@ -60,6 +60,7 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <PostHogProvider>
+          <MobilePwaManifest />
           <DesktopGate>{children}</DesktopGate>
         </PostHogProvider>
       </body>
