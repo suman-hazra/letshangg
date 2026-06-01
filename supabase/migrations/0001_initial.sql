@@ -39,11 +39,20 @@ create trigger on_auth_user_created
 -- preference_options: the curated activity catalog
 -- ============================================================
 create table public.preference_options (
-  id           uuid primary key default gen_random_uuid(),
-  label        text not null,
-  emoji        text,
-  activity_key text unique not null,        -- maps to FALLBACK_POOL key in lib/copy.ts
-  category     text
+  id                  uuid primary key default gen_random_uuid(),
+  label               text not null,
+  emoji               text,
+  activity_key        text unique not null,        -- maps to FALLBACK_POOL key in lib/copy.ts
+  category            text,
+  quiz_order          int,
+  energy              text,
+  social_setting      text,
+  physical_exertion   text,
+  novelty             text,
+  setting             text,
+  typical_cost        text,
+  time_needed         text,
+  is_active           boolean not null default true
 );
 
 -- ============================================================
@@ -53,7 +62,7 @@ create table public.user_preferences (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid not null references public.profiles(id) on delete cascade,
   preference_id uuid not null references public.preference_options(id) on delete cascade,
-  verdict       text not null check (verdict in ('yay', 'nay')),
+  verdict       text not null check (verdict in ('yay', 'meh', 'nay')),
   unique (user_id, preference_id)
 );
 
@@ -97,6 +106,8 @@ create index idx_hangs_user_a_unseen_match on public.hangs (user_a)
   where matched = true and seen_a_at is null;
 create index idx_hangs_user_b_unseen_match on public.hangs (user_b)
   where matched = true and seen_b_at is null;
+create unique index preference_options_active_quiz_order_idx on public.preference_options (quiz_order)
+  where is_active = true;
 
 -- ============================================================
 -- RLS

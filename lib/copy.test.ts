@@ -4,10 +4,12 @@ import { pickFallbackCopy } from "./copy";
 describe("pickFallbackCopy", () => {
   // Mirrors supabase/seed.sql. If we add/rename activity_keys, update both.
   const seededActivities = [
-    "coffee", "restaurant", "hike", "show", "museum", "park", "movie",
-    "pizza", "thrift", "workout", "drinks", "game_night", "bowling",
-    "bike", "sunset_walk", "ice_cream", "bookstore", "karaoke", "beach",
-    "cooking",
+    "coffee", "pizza", "movie", "drinks", "house_party", "dancing",
+    "workout", "bike", "pickup_sport", "rock_climbing", "hike", "park",
+    "sunset_walk", "beach", "show", "museum", "bookstore",
+    "theater_comedy", "cooking", "pottery_class", "thrift", "bowling",
+    "game_night", "arcade_mini_golf", "ice_cream", "restaurant",
+    "self_care", "day_trip", "escape_room", "festival",
   ];
 
   it.each(seededActivities)(

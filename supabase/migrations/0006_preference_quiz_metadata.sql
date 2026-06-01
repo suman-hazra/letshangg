@@ -1,6 +1,23 @@
--- letshangg preference catalog
--- Idempotent: safe to run multiple times. Existing activity ids are preserved
--- by upserting on activity_key.
+-- Expand onboarding preferences from binary yay/nay to yay/meh/nay and
+-- replace the active quiz catalog with the 30 activity probes.
+
+alter table public.preference_options
+  add column if not exists quiz_order int,
+  add column if not exists energy text,
+  add column if not exists social_setting text,
+  add column if not exists physical_exertion text,
+  add column if not exists novelty text,
+  add column if not exists setting text,
+  add column if not exists typical_cost text,
+  add column if not exists time_needed text,
+  add column if not exists is_active boolean not null default true;
+
+alter table public.user_preferences
+  drop constraint if exists user_preferences_verdict_check;
+
+alter table public.user_preferences
+  add constraint user_preferences_verdict_check
+  check (verdict in ('yay', 'meh', 'nay'));
 
 insert into public.preference_options (
   label,
@@ -60,3 +77,43 @@ on conflict (activity_key) do update set
   typical_cost = excluded.typical_cost,
   time_needed = excluded.time_needed,
   is_active = excluded.is_active;
+
+update public.preference_options
+set is_active = false,
+    quiz_order = null
+where activity_key not in (
+  'coffee',
+  'pizza',
+  'movie',
+  'drinks',
+  'house_party',
+  'dancing',
+  'workout',
+  'bike',
+  'pickup_sport',
+  'rock_climbing',
+  'hike',
+  'park',
+  'sunset_walk',
+  'beach',
+  'show',
+  'museum',
+  'bookstore',
+  'theater_comedy',
+  'cooking',
+  'pottery_class',
+  'thrift',
+  'bowling',
+  'game_night',
+  'arcade_mini_golf',
+  'ice_cream',
+  'restaurant',
+  'self_care',
+  'day_trip',
+  'escape_room',
+  'festival'
+);
+
+create unique index if not exists preference_options_active_quiz_order_idx
+  on public.preference_options (quiz_order)
+  where is_active = true;

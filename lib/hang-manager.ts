@@ -145,7 +145,8 @@ export async function generateHangsForUser(userId: string): Promise<void> {
   const { data: prefCatalog } = await admin
     .from("preference_options")
     .select("id, label, activity_key")
-    .in("id", Array.from(sharedPrefIds));
+    .in("id", Array.from(sharedPrefIds))
+    .eq("is_active", true);
 
   const prefById = new Map(
     (prefCatalog ?? []).map((p) => [p.id, p]),

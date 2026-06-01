@@ -8,7 +8,10 @@ export async function saveVerdict(formData: FormData) {
   const preference_id = String(formData.get("preference_id") ?? "");
   const verdict = String(formData.get("verdict") ?? "");
 
-  if (!preference_id || (verdict !== "yay" && verdict !== "nay")) {
+  if (
+    !preference_id ||
+    (verdict !== "yay" && verdict !== "meh" && verdict !== "nay")
+  ) {
     redirect("/onboarding/preferences");
   }
 
@@ -24,7 +27,7 @@ export async function saveVerdict(formData: FormData) {
       {
         user_id: user.id,
         preference_id,
-        verdict: verdict as "yay" | "nay",
+        verdict: verdict as "yay" | "meh" | "nay",
       },
       { onConflict: "user_id,preference_id" },
     );

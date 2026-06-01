@@ -66,7 +66,10 @@ export async function signOut() {
 export async function togglePreference(formData: FormData) {
   const preference_id = String(formData.get("preference_id") ?? "");
   const newVerdict = String(formData.get("new_verdict") ?? "");
-  if (!preference_id || (newVerdict !== "yay" && newVerdict !== "nay")) {
+  if (
+    !preference_id ||
+    (newVerdict !== "yay" && newVerdict !== "meh" && newVerdict !== "nay")
+  ) {
     redirect("/profile/preferences");
   }
 
@@ -82,7 +85,7 @@ export async function togglePreference(formData: FormData) {
       {
         user_id: user.id,
         preference_id,
-        verdict: newVerdict as "yay" | "nay",
+        verdict: newVerdict as "yay" | "meh" | "nay",
       },
       { onConflict: "user_id,preference_id" },
     );

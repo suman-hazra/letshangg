@@ -49,6 +49,15 @@ export type Database = {
           emoji: string | null;
           activity_key: string;
           category: string | null;
+          quiz_order: number | null;
+          energy: string | null;
+          social_setting: string | null;
+          physical_exertion: string | null;
+          novelty: string | null;
+          setting: string | null;
+          typical_cost: string | null;
+          time_needed: string | null;
+          is_active: boolean;
         };
         Insert: {
           id?: string;
@@ -56,6 +65,15 @@ export type Database = {
           emoji?: string | null;
           activity_key: string;
           category?: string | null;
+          quiz_order?: number | null;
+          energy?: string | null;
+          social_setting?: string | null;
+          physical_exertion?: string | null;
+          novelty?: string | null;
+          setting?: string | null;
+          typical_cost?: string | null;
+          time_needed?: string | null;
+          is_active?: boolean;
         };
         Update: {
           id?: string;
@@ -63,6 +81,15 @@ export type Database = {
           emoji?: string | null;
           activity_key?: string;
           category?: string | null;
+          quiz_order?: number | null;
+          energy?: string | null;
+          social_setting?: string | null;
+          physical_exertion?: string | null;
+          novelty?: string | null;
+          setting?: string | null;
+          typical_cost?: string | null;
+          time_needed?: string | null;
+          is_active?: boolean;
         };
         Relationships: [];
       };
@@ -71,19 +98,19 @@ export type Database = {
           id: string;
           user_id: string;
           preference_id: string;
-          verdict: "yay" | "nay";
+          verdict: "yay" | "meh" | "nay";
         };
         Insert: {
           id?: string;
           user_id: string;
           preference_id: string;
-          verdict: "yay" | "nay";
+          verdict: "yay" | "meh" | "nay";
         };
         Update: {
           id?: string;
           user_id?: string;
           preference_id?: string;
-          verdict?: "yay" | "nay";
+          verdict?: "yay" | "meh" | "nay";
         };
         Relationships: [];
       };

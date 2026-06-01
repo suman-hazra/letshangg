@@ -13,9 +13,9 @@ export default async function EditPreferencesPage() {
   const [{ data: prefs }, { data: votes }] = await Promise.all([
     supabase
       .from("preference_options")
-      .select("id, label, emoji, activity_key")
-      .order("category", { ascending: true })
-      .order("label", { ascending: true }),
+      .select("id, label, activity_key, quiz_order")
+      .eq("is_active", true)
+      .order("quiz_order", { ascending: true }),
     supabase
       .from("user_preferences")
       .select("preference_id, verdict")
@@ -47,46 +47,41 @@ export default async function EditPreferencesPage() {
         <ul className="mt-8 space-y-3">
           {(prefs ?? []).map((p) => {
             const v = verdictByPref.get(p.id) ?? "nay";
-            const isYay = v === "yay";
-            const nextVerdict = isYay ? "nay" : "yay";
             return (
               <li
                 key={p.id}
                 className="rounded-2xl bg-surface border border-line px-4 py-3 flex items-center gap-3"
               >
-                <span className="text-2xl leading-none" aria-hidden>
-                  {p.emoji}
-                </span>
                 <p className="flex-1 font-sans text-sm font-semibold text-ink truncate">
                   {p.label}
                 </p>
-                <form action={togglePreference}>
-                  <input
-                    type="hidden"
-                    name="preference_id"
-                    value={p.id}
-                  />
-                  <input
-                    type="hidden"
-                    name="new_verdict"
-                    value={nextVerdict}
-                  />
-                  <button
-                    type="submit"
-                    aria-label={
-                      isYay
-                        ? `Currently YAY — tap to switch to NAY`
-                        : `Currently NAY — tap to switch to YAY`
-                    }
-                    className={`h-9 px-4 rounded-full font-sans text-xs font-semibold transition ${
-                      isYay
-                        ? "bg-ink text-surface"
-                        : "bg-surface border border-line text-muted"
-                    }`}
-                  >
-                    {isYay ? "YAY" : "NAY"}
-                  </button>
-                </form>
+                <div className="flex items-center gap-1 rounded-full border border-line bg-background p-1">
+                  {(["yay", "meh", "nay"] as const).map((verdict) => (
+                    <form action={togglePreference} key={verdict}>
+                      <input
+                        type="hidden"
+                        name="preference_id"
+                        value={p.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="new_verdict"
+                        value={verdict}
+                      />
+                      <button
+                        type="submit"
+                        aria-label={`Set ${p.label} to ${verdict}`}
+                        className={`h-7 px-3 rounded-full font-sans text-[10px] font-black uppercase transition ${
+                          v === verdict
+                            ? "bg-ink text-surface"
+                            : "text-muted"
+                        }`}
+                      >
+                        {verdict}
+                      </button>
+                    </form>
+                  ))}
+                </div>
               </li>
             );
           })}

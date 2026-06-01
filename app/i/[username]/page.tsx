@@ -117,12 +117,23 @@ export default async function InviteAcceptPage({
     );
   }
 
-  const { count: prefCount } = await supabase
-    .from("user_preferences")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id);
+  const [{ data: activePrefs }, { data: votedPrefs }] = await Promise.all([
+    supabase
+      .from("preference_options")
+      .select("id")
+      .eq("is_active", true),
+    supabase
+      .from("user_preferences")
+      .select("preference_id")
+      .eq("user_id", user.id),
+  ]);
 
-  if (!prefCount || prefCount === 0) {
+  const activePrefIds = new Set((activePrefs ?? []).map((p) => p.id));
+  const votedActiveCount = (votedPrefs ?? []).filter((p) =>
+    activePrefIds.has(p.preference_id),
+  ).length;
+
+  if (votedActiveCount < activePrefIds.size) {
     return (
       <InviteResult
         title={`You're now friends with ${inviter.display_name ?? inviter.username}.`}

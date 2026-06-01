@@ -12,8 +12,9 @@ export default async function PreferencesPage() {
   // All curated preferences
   const { data: prefs, error: prefsError } = await supabase
     .from("preference_options")
-    .select("id, label, emoji, activity_key")
-    .order("activity_key");
+    .select("id, label, activity_key, quiz_order")
+    .eq("is_active", true)
+    .order("quiz_order");
 
   if (prefsError || !prefs) {
     throw new Error(prefsError?.message ?? "could not load preferences");
@@ -59,33 +60,35 @@ export default async function PreferencesPage() {
         {/* Card */}
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full rounded-2xl bg-surface border border-line px-8 py-12 text-center">
-            <div className="text-6xl leading-none" aria-hidden>
-              {card.emoji}
-            </div>
-            <h1 className="mt-6 font-serif text-3xl leading-tight text-ink">
+            <h1 className="font-serif text-3xl leading-tight text-ink">
               {card.label}
             </h1>
             <p className="mt-3 font-sans text-sm text-muted">
-              into it, or not your thing?
+              yay, meh, or nay?
             </p>
           </div>
 
           {/* Verdict buttons */}
-          <div className="mt-8 flex items-center justify-center gap-6">
-            <form action={saveVerdict}>
-              <input type="hidden" name="preference_id" value={card.id} />
-              <input type="hidden" name="verdict" value="nay" />
-              <VerdictButton kind="nay" aria-label={`Skip ${card.label}`} />
-            </form>
+          <div className="mt-8 flex items-center justify-center gap-4">
             <form action={saveVerdict}>
               <input type="hidden" name="preference_id" value={card.id} />
               <input type="hidden" name="verdict" value="yay" />
               <VerdictButton kind="yay" aria-label={`Yay to ${card.label}`} />
             </form>
+            <form action={saveVerdict}>
+              <input type="hidden" name="preference_id" value={card.id} />
+              <input type="hidden" name="verdict" value="meh" />
+              <VerdictButton kind="meh" aria-label={`Meh to ${card.label}`} />
+            </form>
+            <form action={saveVerdict}>
+              <input type="hidden" name="preference_id" value={card.id} />
+              <input type="hidden" name="verdict" value="nay" />
+              <VerdictButton kind="nay" aria-label={`Nay to ${card.label}`} />
+            </form>
           </div>
 
           <p className="mt-8 font-script text-lg text-muted">
-            no one sees what you skip.
+            only mutual yeses become matches.
           </p>
         </div>
       </div>
@@ -97,41 +100,23 @@ function VerdictButton({
   kind,
   ...rest
 }: {
-  kind: "yay" | "nay";
+  kind: "yay" | "meh" | "nay";
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const isYay = kind === "yay";
+  const isMeh = kind === "meh";
   return (
     <button
       type="submit"
-      className={`h-16 w-16 rounded-full flex items-center justify-center transition active:scale-95 ${
+      className={`h-16 w-16 rounded-full flex items-center justify-center font-sans text-xs font-black uppercase transition active:scale-95 ${
         isYay
           ? "bg-ink text-surface"
-          : "bg-surface border border-line text-ink"
+          : isMeh
+            ? "bg-[#F8EBD6] text-[#C99352]"
+            : "bg-surface border border-line text-ink"
       }`}
       {...rest}
     >
-      {isYay ? (
-        <CheckIcon />
-      ) : (
-        <XIcon />
-      )}
+      {isYay ? "Yay" : isMeh ? "Meh" : "Nay"}
     </button>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
   );
 }
