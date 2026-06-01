@@ -48,7 +48,8 @@ export async function updateSession(request: NextRequest) {
   const isDevPreview =
     process.env.NODE_ENV !== "production" &&
     (pathname === "/onboarding/profile" ||
-      pathname === "/onboarding/preferences-intro") &&
+      pathname === "/onboarding/preferences-intro" ||
+      pathname === "/onboarding/preferences") &&
     request.nextUrl.searchParams.get("preview") === "1";
 
   if (!user && !isPublic && !isDevPreview) {

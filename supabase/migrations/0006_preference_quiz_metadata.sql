@@ -35,7 +35,7 @@ insert into public.preference_options (
   is_active
 ) values
   ('Grab coffee', null, 'coffee', 'Relaxed & Intimate', 1, 'Low', '1:1 / Small', 'Low', 'Routine', 'Indoor', '$', 'Quick (<1h)', true),
-  ('Get pizza (casual, low-key)', null, 'pizza', 'Relaxed & Intimate', 2, 'Low', 'Small group', 'Low', 'Routine', 'Indoor', '$', 'Quick-1h', true),
+  ('Get pizza', null, 'pizza', 'Relaxed & Intimate', 2, 'Low', 'Small group', 'Low', 'Routine', 'Indoor', '$', 'Quick-1h', true),
   ('Watch a movie', null, 'movie', 'Relaxed & Intimate', 3, 'Low', '1:1 / Small', 'Low', 'Routine', 'Indoor', '$$', 'Half-event', true),
   ('Grab drinks', null, 'drinks', 'Social & Energetic', 4, 'Medium', 'Small / Crowd', 'Low', 'Moderate', 'Indoor', '$$', 'Half-event', true),
   ('Go to a house party / get-together', null, 'house_party', 'Social & Energetic', 5, 'High', 'Crowd', 'Low', 'Moderate', 'Indoor', '$', 'Full event', true),
