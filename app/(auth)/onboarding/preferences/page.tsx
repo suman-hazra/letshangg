@@ -189,13 +189,13 @@ export default async function PreferencesPage({
         </div>
       )}
 
-      <div className="absolute bottom-[190px] left-1/2 max-w-[calc(100%-56px)] -translate-x-1/2 rounded-full border border-white/60 bg-white/85 px-7 py-3.5 text-center shadow-[0_14px_34px_-12px_rgba(13,40,62,0.45)] backdrop-blur-xl">
+      <div className="absolute bottom-[260px] left-1/2 max-w-[calc(100%-56px)] -translate-x-1/2 rounded-full border border-white/60 bg-white/85 px-7 py-3.5 text-center shadow-[0_14px_34px_-12px_rgba(13,40,62,0.45)] backdrop-blur-xl">
         <h1 className="whitespace-nowrap font-[family-name:var(--font-quiz-heading)] text-[21px] font-extrabold leading-tight tracking-[-0.02em] text-[#15293A]">
           {card.label}
         </h1>
       </div>
 
-      <div className="absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+56px)] flex items-end justify-center gap-7 px-5">
+      <div className="absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+126px)] flex items-end justify-center gap-7 px-5">
         <form action={saveVerdict}>
           <input type="hidden" name="preference_id" value={card.id} />
           <input type="hidden" name="verdict" value="nay" />
