@@ -21,7 +21,7 @@ insert into public.preference_options (
   ('Get pizza', null, 'pizza', 'Relaxed & Intimate', 2, 'Low', 'Small group', 'Low', 'Routine', 'Indoor', '$', 'Quick-1h', true),
   ('Watch a movie', null, 'movie', 'Relaxed & Intimate', 3, 'Low', '1:1 / Small', 'Low', 'Routine', 'Indoor', '$$', 'Half-event', true),
   ('Grab drinks', null, 'drinks', 'Social & Energetic', 4, 'Medium', 'Small / Crowd', 'Low', 'Moderate', 'Indoor', '$$', 'Half-event', true),
-  ('Go to a house party / get-together', null, 'house_party', 'Social & Energetic', 5, 'High', 'Crowd', 'Low', 'Moderate', 'Indoor', '$', 'Full event', true),
+  ('Go to a house party', null, 'house_party', 'Social & Energetic', 5, 'High', 'Crowd', 'Low', 'Moderate', 'Indoor', '$', 'Full event', true),
   ('Go dancing / night out', null, 'dancing', 'Social & Energetic', 6, 'High', 'Crowd', 'Medium', 'Moderate', 'Indoor', '$$', 'Full event', true),
   ('Take a workout class', null, 'workout', 'Active & Sporty', 7, 'Medium', 'Small / Crowd', 'High', 'Moderate', 'Indoor', '$$', '1h', true),
   ('Bike ride', null, 'bike', 'Active & Sporty', 8, 'Medium', '1:1 / Small', 'High', 'Moderate', 'Outdoor', '$', 'Half-day', true),

@@ -56,7 +56,7 @@ const PREVIEW_ACTIVITIES = [
   { label: "Get pizza", activity_key: "pizza" },
   { label: "Watch a movie", activity_key: "movie" },
   { label: "Grab drinks", activity_key: "drinks" },
-  { label: "Go to a house party / get-together", activity_key: "house_party" },
+  { label: "Go to a house party", activity_key: "house_party" },
   { label: "Go dancing / night out", activity_key: "dancing" },
   { label: "Take a workout class", activity_key: "workout" },
   { label: "Bike ride", activity_key: "bike" },
@@ -139,6 +139,10 @@ export default async function PreferencesPage({
   const total = orderedPrefs.length;
   const progressPct = ((completed + 1) / total) * 100;
   const activityImage = QUIZ_IMAGES[card.activity_key];
+  const preloadedActivityImages = remaining
+    .slice(1, 3)
+    .map((preference) => QUIZ_IMAGES[preference.activity_key])
+    .filter((image): image is string => Boolean(image));
 
   return (
     <main
@@ -158,9 +162,22 @@ export default async function PreferencesPage({
           fill
           className="object-cover"
           sizes="100vw"
-          priority
+          preload
         />
       )}
+      {preloadedActivityImages.map((image) => (
+        <Image
+          key={image}
+          src={image}
+          alt=""
+          fill
+          aria-hidden
+          className="pointer-events-none -z-10 object-cover opacity-0"
+          sizes="100vw"
+          loading="eager"
+          fetchPriority="low"
+        />
+      ))}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
