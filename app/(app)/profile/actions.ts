@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateHangsForUser } from "@/lib/hang-manager";
 
 export async function saveDisplayName(formData: FormData) {
@@ -59,6 +60,42 @@ export async function saveAvatarUrl(formData: FormData) {
 
 export async function signOut() {
   const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/");
+}
+
+export async function deleteProfile(formData: FormData) {
+  const confirmation = String(formData.get("confirmation") ?? "");
+  if (confirmation !== "delete") {
+    redirect(
+      `/profile?error=${encodeURIComponent(
+        "confirm profile deletion before continuing",
+      )}`,
+    );
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const admin = createAdminClient();
+
+  const { data: avatarFiles } = await admin.storage
+    .from("avatars")
+    .list(user.id);
+  if (avatarFiles && avatarFiles.length > 0) {
+    await admin.storage
+      .from("avatars")
+      .remove(avatarFiles.map((file) => `${user.id}/${file.name}`));
+  }
+
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) {
+    redirect(`/profile?error=${encodeURIComponent(error.message)}`);
+  }
+
   await supabase.auth.signOut();
   redirect("/");
 }

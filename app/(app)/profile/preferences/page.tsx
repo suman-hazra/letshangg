@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
-import { togglePreference } from "../actions";
+import { HangPreferencesForm } from "./client";
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: "700",
+  variable: "--font-hang-prefs-serif",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-hang-prefs-sans",
+});
 
 export default async function EditPreferencesPage() {
   const supabase = await createClient();
@@ -27,70 +39,59 @@ export default async function EditPreferencesPage() {
   );
 
   return (
-    <main className="flex-1 flex flex-col items-center px-6 pb-12">
-      <div className="w-full max-w-[430px]">
-        <Link
-          href="/profile"
-          className="font-sans text-xs tracking-widest uppercase text-muted"
-        >
-          ← Profile
-        </Link>
+    <main
+      className={`${lora.variable} ${jakarta.variable} relative z-10 flex min-h-0 flex-1 flex-col`}
+    >
+      <div className="border-b border-[rgba(140,192,235,0.14)] px-5 pb-4 pt-4">
+        <div className="mx-auto w-full max-w-[430px]">
+          <Link
+            href="/profile"
+            className="mb-4 flex items-center gap-1 font-[family-name:var(--font-hang-prefs-sans)] text-xs font-bold uppercase tracking-widest text-[#8CC0EB] transition active:opacity-60"
+          >
+            <ArrowLeftIcon />
+            Profile
+          </Link>
 
-        <h1 className="mt-6 font-serif text-3xl text-ink leading-tight">
-          What are you up for?
-        </h1>
-        <p className="mt-2 font-sans text-sm text-muted">
-          Tap to switch a YAY to a NAY or vice versa. New YAYs find new hangs
-          with your friends.
-        </p>
-
-        <ul className="mt-8 space-y-3">
-          {(prefs ?? []).map((p) => {
-            const v = verdictByPref.get(p.id) ?? "nay";
-            return (
-              <li
-                key={p.id}
-                className="rounded-2xl bg-surface border border-line px-4 py-3 flex items-center gap-3"
-              >
-                <p className="flex-1 font-sans text-sm font-semibold text-ink truncate">
-                  {p.label}
-                </p>
-                <div className="flex items-center gap-1 rounded-full border border-line bg-background p-1">
-                  {(["yay", "meh", "nay"] as const).map((verdict) => (
-                    <form action={togglePreference} key={verdict}>
-                      <input
-                        type="hidden"
-                        name="preference_id"
-                        value={p.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="new_verdict"
-                        value={verdict}
-                      />
-                      <button
-                        type="submit"
-                        aria-label={`Set ${p.label} to ${verdict}`}
-                        className={`h-7 px-3 rounded-full font-sans text-[10px] font-black uppercase transition ${
-                          v === verdict
-                            ? "bg-ink text-surface"
-                            : "text-muted"
-                        }`}
-                      >
-                        {verdict}
-                      </button>
-                    </form>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-
-        <p className="mt-10 font-script text-lg text-muted text-center">
-          no one sees what you skip.
-        </p>
+          <h1 className="font-[family-name:var(--font-hang-prefs-serif)] text-[26px] font-bold leading-tight text-[#2D3E4E]">
+            What are you up for?
+          </h1>
+          <p className="mt-2 font-[family-name:var(--font-hang-prefs-sans)] text-[13px] leading-relaxed text-[#8A9CAB]">
+            Tap to switch a YAY to a NAY or vice versa.{" "}
+            <span className="text-[#6AAAD8]">New YAYs</span> find new hangs
+            with your friends.
+          </p>
+        </div>
       </div>
+
+      <HangPreferencesForm
+        preferences={(prefs ?? []).map((preference) => ({
+          id: preference.id,
+          label: preference.label,
+          activity_key: preference.activity_key,
+          verdict:
+            (verdictByPref.get(preference.id) as "yay" | "meh" | "nay") ??
+            "nay",
+        }))}
+      />
     </main>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </svg>
   );
 }

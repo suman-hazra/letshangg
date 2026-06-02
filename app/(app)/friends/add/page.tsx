@@ -39,8 +39,9 @@ export default async function AddFriendPage({
                 type="text"
                 autoFocus
                 required
-                pattern="[a-z0-9_]{3,20}"
-                title="3-20 chars: lowercase letters, numbers, underscores"
+                pattern="[A-Za-z0-9_]{3,20}"
+                title="3-20 chars: letters, numbers, underscores"
+                autoCapitalize="none"
                 placeholder="e.g. dustin"
                 className="w-full h-12 pl-9 pr-4 rounded-2xl bg-surface border border-line font-sans text-base text-ink placeholder:text-muted focus:outline-none focus:border-ink transition"
               />

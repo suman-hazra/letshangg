@@ -13,7 +13,7 @@ export async function saveProfile(formData: FormData) {
   if (!USERNAME_RE.test(username)) {
     redirect(
       `/onboarding/profile?error=${encodeURIComponent(
-        "username must be 3-20 lowercase letters, numbers, or underscores",
+        "username must be 3-20 letters, numbers, or underscores",
       )}`,
     );
   }

@@ -23,18 +23,21 @@ export function UsernameField({ defaultValue }: { defaultValue: string }) {
             type="text"
             placeholder="e.g. john123"
             required
-            pattern="[a-z0-9_]{3,20}"
-            title="3-20 chars: lowercase letters, numbers, underscores"
+            pattern="[A-Za-z0-9_]{3,20}"
+            title="3-20 chars: letters, numbers, underscores"
+            autoCapitalize="none"
             suppressHydrationWarning
             value={value}
-            onChange={(event) => setValue(event.target.value)}
+            onChange={(event) =>
+              setValue(event.target.value.toLowerCase())
+            }
             className="flex-1 bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
           />
         </div>
       </div>
       {shouldShowHint && (
         <p className="mt-1.5 font-[family-name:var(--font-landing-sans)] text-[11.5px] font-medium text-[#9AACBA]">
-          lowercase letters, numbers, or underscores · 3-20 characters
+          letters, numbers, or underscores · saved lowercase · 3-20 characters
         </p>
       )}
     </>
