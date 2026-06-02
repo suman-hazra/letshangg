@@ -1,7 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { InviteCard } from "./client";
+
+const lora = Lora({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["400", "700"],
+  variable: "--font-invite-serif",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-invite-sans",
+});
 
 export default async function InvitePage() {
   const supabase = await createClient();
@@ -21,29 +34,47 @@ export default async function InvitePage() {
   const displayName = profile.display_name ?? profile.username;
 
   return (
-    <main className="flex-1 flex flex-col items-center px-6 pb-12">
-      <div className="w-full max-w-[430px]">
+    <main
+      className={`${lora.variable} ${jakarta.variable} relative z-10 flex-1 px-5 pb-8 pt-5`}
+    >
+      <div className="mx-auto w-full max-w-[430px]">
         <Link
           href="/friends"
-          className="font-sans text-xs tracking-widest uppercase text-muted"
+          className="mb-5 inline-flex items-center gap-1 font-[family-name:var(--font-invite-sans)] text-xs font-bold uppercase tracking-widest text-[#8CC0EB] transition active:opacity-60"
         >
-          ← Friends
+          <ArrowLeftIcon />
+          <span>Friends</span>
         </Link>
 
-        <h1 className="mt-6 font-serif text-3xl text-ink leading-tight">
+        <h1 className="font-[family-name:var(--font-invite-serif)] text-[30px] font-bold leading-tight text-[#2D3E4E]">
           Bring a friend.
         </h1>
-        <p className="mt-2 font-sans text-sm text-muted">
+        <p className="mb-7 mt-2 font-[family-name:var(--font-invite-sans)] text-[13px] leading-relaxed text-[#8A9CAB]">
           Share this link or have them scan the code. They&apos;ll be auto-added
           to your friends.
         </p>
 
         <InviteCard username={profile.username} displayName={displayName} />
-
-        <p className="mt-10 font-script text-lg text-muted text-center">
-          no awkward intros.
-        </p>
       </div>
     </main>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </svg>
   );
 }

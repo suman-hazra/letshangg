@@ -179,3 +179,52 @@ export async function declineFriendRequest(formData: FormData) {
   revalidatePath("/friends");
   redirect("/friends");
 }
+
+export async function removeFriend(formData: FormData) {
+  const friendshipId = String(formData.get("friendship_id") ?? "");
+  if (!friendshipId) redirect("/friends");
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: row } = await supabase
+    .from("friendships")
+    .select("id, requester_id, addressee_id, status")
+    .eq("id", friendshipId)
+    .maybeSingle();
+
+  if (
+    !row ||
+    row.status !== "accepted" ||
+    (row.requester_id !== user.id && row.addressee_id !== user.id)
+  ) {
+    redirect("/friends");
+  }
+
+  const admin = createAdminClient();
+  const friendId =
+    row.requester_id === user.id ? row.addressee_id : row.requester_id;
+
+  const [{ error: deleteFriendshipError }, { error: deleteHangsError }] =
+    await Promise.all([
+      admin.from("friendships").delete().eq("id", row.id),
+      admin
+        .from("hangs")
+        .delete()
+        .or(
+          `and(user_a.eq.${user.id},user_b.eq.${friendId}),and(user_a.eq.${friendId},user_b.eq.${user.id})`,
+        ),
+    ]);
+
+  const error = deleteFriendshipError ?? deleteHangsError;
+  if (error) {
+    redirect(`/friends?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/friends");
+  revalidatePath("/home");
+  redirect("/friends");
+}

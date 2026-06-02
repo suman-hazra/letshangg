@@ -1,23 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
 export function InviteCard({
   username,
-  displayName,
 }: {
   username: string;
   displayName: string;
 }) {
-  const [origin, setOrigin] = useState("");
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
-
-  const inviteUrl = origin ? `${origin}/i/${username}` : `/i/${username}`;
+  const inviteUrl = useMemo(() => {
+    const origin =
+      typeof window === "undefined" ? "https://letshangg.app" : window.location.origin;
+    return `${origin}/i/${username}`;
+  }, [username]);
+  const displayUrl = inviteUrl.replace(/^https?:\/\//, "");
 
   async function copy() {
     try {
@@ -29,62 +27,57 @@ export function InviteCard({
     }
   }
 
-  async function share() {
-    if (typeof navigator !== "undefined" && "share" in navigator) {
-      try {
-        await navigator.share({
-          title: "letshangg",
-          text: `${displayName} wants to hang on letshangg — tap to add each other`,
-          url: inviteUrl,
-        });
-      } catch {
-        // user dismissed share sheet — ignore
-      }
-    } else {
-      copy();
-    }
-  }
-
   return (
-    <div className="mt-8">
-      {/* QR card */}
-      <div className="rounded-2xl bg-surface border border-line p-6 flex flex-col items-center">
-        <div className="rounded-xl bg-background p-3">
+    <div>
+      <div className="mb-4 flex flex-col items-center rounded-3xl border border-white/80 bg-white/70 px-6 py-7 shadow-[0_4px_24px_rgba(44,62,78,0.07)] backdrop-blur-xl">
+        <div className="mb-4 rounded-2xl bg-white p-4 shadow-[0_1px_8px_rgba(44,62,78,0.08)]">
           <QRCodeSVG
             value={inviteUrl}
-            size={208}
+            size={200}
             level="M"
-            fgColor="#1A1714"
-            bgColor="#F7F5F2"
+            fgColor="#2D3E4E"
+            bgColor="#FFFFFF"
           />
         </div>
-        <p className="mt-4 font-script text-xl text-muted">
+        <p className="font-[family-name:var(--font-invite-serif)] text-xs italic text-[#AFBEC9]">
           point a camera at me.
         </p>
       </div>
 
-      {/* URL with copy */}
-      <div className="mt-4 flex items-center gap-2">
-        <div className="flex-1 h-12 px-4 rounded-2xl bg-surface border border-line flex items-center font-sans text-sm text-ink truncate">
-          {inviteUrl.replace(/^https?:\/\//, "")}
+      <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center rounded-2xl border-[1.5px] border-[rgba(140,192,235,0.28)] bg-white/75 px-4 py-[13px] backdrop-blur-md">
+          <span className="truncate font-[family-name:var(--font-invite-sans)] text-[13px] text-[#6A8FAA]">
+            {displayUrl}
+          </span>
         </div>
         <button
           type="button"
           onClick={copy}
-          className="h-12 px-5 rounded-full bg-ink text-surface font-sans text-sm font-semibold transition hover:opacity-90 shrink-0"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#8CC0EB_0%,#6AAAD8_100%)] px-5 py-[13px] font-[family-name:var(--font-invite-sans)] text-[13px] font-bold text-white shadow-sm transition active:opacity-80"
         >
-          {copied ? "Copied" : "Copy"}
+          <CopyIcon />
+          <span>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
-
-      {/* Share-sheet (mobile mainly) */}
-      <button
-        type="button"
-        onClick={share}
-        className="mt-3 w-full h-12 rounded-full bg-surface border border-line text-ink font-sans text-sm font-semibold transition hover:bg-accent-soft"
-      >
-        Share
-      </button>
     </div>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 8h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2Z" />
+      <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
+    </svg>
   );
 }

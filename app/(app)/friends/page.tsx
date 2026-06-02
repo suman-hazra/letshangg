@@ -1,8 +1,35 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
-import { acceptFriendRequest, declineFriendRequest } from "./actions";
-import { Avatar } from "../_components/avatar";
+import {
+  type AcceptedFriend,
+  type PendingFriend,
+  FriendsScreen,
+} from "./client";
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-friends-serif",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-friends-sans",
+});
+
+type FriendshipRow = {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: string;
+};
+
+type ProfileRow = {
+  display_name: string | null;
+  username: string;
+  avatar_url: string | null;
+};
 
 export default async function FriendsPage({
   searchParams,
@@ -23,188 +50,81 @@ export default async function FriendsPage({
     .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
-  const accepted = (rows ?? []).filter((r) => r.status === "accepted");
-  const incomingPending = (rows ?? []).filter(
+  const friendships = (rows ?? []) as FriendshipRow[];
+  const acceptedRows = friendships.filter((r) => r.status === "accepted");
+  const incomingPendingRows = friendships.filter(
     (r) => r.status === "pending" && r.addressee_id === user.id,
   );
-  const outgoingPending = (rows ?? []).filter(
+  const outgoingPendingRows = friendships.filter(
     (r) => r.status === "pending" && r.requester_id === user.id,
   );
 
-  // Resolve display info for all referenced friend ids.
   const friendIds = new Set<string>();
-  for (const r of accepted) {
-    friendIds.add(r.requester_id === user.id ? r.addressee_id : r.requester_id);
+  for (const row of acceptedRows) {
+    friendIds.add(
+      row.requester_id === user.id ? row.addressee_id : row.requester_id,
+    );
   }
-  for (const r of incomingPending) friendIds.add(r.requester_id);
-  for (const r of outgoingPending) friendIds.add(r.addressee_id);
+  for (const row of incomingPendingRows) friendIds.add(row.requester_id);
+  for (const row of outgoingPendingRows) friendIds.add(row.addressee_id);
 
-  const profileById = new Map<
-    string,
-    { display_name: string | null; username: string; avatar_url: string | null }
-  >();
+  const profileById = new Map<string, ProfileRow>();
   if (friendIds.size > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, display_name, username, avatar_url")
       .in("id", Array.from(friendIds));
-    for (const p of profiles ?? []) {
-      profileById.set(p.id, {
-        display_name: p.display_name,
-        username: p.username,
-        avatar_url: p.avatar_url,
+
+    for (const profile of profiles ?? []) {
+      profileById.set(profile.id, {
+        display_name: profile.display_name,
+        username: profile.username,
+        avatar_url: profile.avatar_url,
       });
     }
   }
 
+  const accepted = acceptedRows.map((row) =>
+    toFriend(
+      row,
+      row.requester_id === user.id ? row.addressee_id : row.requester_id,
+      profileById,
+    ),
+  );
+  const incomingPending = incomingPendingRows.map((row) =>
+    toFriend(row, row.requester_id, profileById),
+  );
+  const outgoingPending = outgoingPendingRows.map((row) =>
+    toFriend(row, row.addressee_id, profileById),
+  );
+
   return (
-    <main className="flex-1 flex flex-col items-center px-6 pb-12">
-      <div className="w-full max-w-[430px]">
-        <h1 className="mt-4 font-serif text-3xl text-ink leading-tight">
-          Your people.
-        </h1>
-        <p className="mt-2 font-sans text-sm text-muted">
-          Add a friend to start seeing hangs you&apos;d both say yes to.
-        </p>
-
-        {/* Toast on send success */}
-        {sent && (
-          <p className="mt-4 font-sans text-sm text-ink bg-accent-soft rounded-2xl px-4 py-3">
-            Request sent to {decodeURIComponent(sent)}.
-          </p>
-        )}
-        {error && (
-          <p className="mt-4 font-sans text-sm text-danger bg-surface border border-line rounded-2xl px-4 py-3">
-            {decodeURIComponent(error)}
-          </p>
-        )}
-
-        {/* CTAs */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <Link
-            href="/friends/invite"
-            className="h-12 rounded-full bg-ink text-surface flex items-center justify-center font-sans text-sm font-semibold transition hover:opacity-90"
-          >
-            Invite a friend
-          </Link>
-          <Link
-            href="/friends/add"
-            className="h-12 rounded-full bg-surface border border-line text-ink flex items-center justify-center font-sans text-sm font-semibold transition hover:bg-accent-soft"
-          >
-            Add by username
-          </Link>
-        </div>
-
-        {/* Pending requests */}
-        {incomingPending.length > 0 && (
-          <section className="mt-10">
-            <h2 className="font-sans text-xs tracking-widest uppercase text-muted">
-              Pending
-            </h2>
-            <ul className="mt-3 space-y-3">
-              {incomingPending.map((r) => {
-                const p = profileById.get(r.requester_id);
-                const name = p?.display_name ?? p?.username ?? "someone";
-                return (
-                  <li
-                    key={r.id}
-                    className="rounded-2xl bg-surface border border-line px-4 py-3 flex items-center gap-3"
-                  >
-                    <Avatar name={name} url={p?.avatar_url} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-sans text-sm font-semibold text-ink truncate">
-                        {name}
-                      </p>
-                      <p className="font-sans text-xs text-muted truncate">
-                        @{p?.username}
-                      </p>
-                    </div>
-                    <form action={declineFriendRequest}>
-                      <input type="hidden" name="friendship_id" value={r.id} />
-                      <button
-                        type="submit"
-                        className="h-9 px-4 rounded-full bg-surface border border-line text-ink text-xs font-semibold"
-                      >
-                        Decline
-                      </button>
-                    </form>
-                    <form action={acceptFriendRequest}>
-                      <input type="hidden" name="friendship_id" value={r.id} />
-                      <button
-                        type="submit"
-                        className="h-9 px-4 rounded-full bg-ink text-surface text-xs font-semibold"
-                      >
-                        Accept
-                      </button>
-                    </form>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-
-        {/* Friends list */}
-        <section className="mt-10">
-          <h2 className="font-sans text-xs tracking-widest uppercase text-muted">
-            Friends ({accepted.length})
-          </h2>
-          {accepted.length === 0 ? (
-            <p className="mt-3 font-sans text-sm text-muted">
-              No friends yet. Send a link or look someone up.
-            </p>
-          ) : (
-            <ul className="mt-3 space-y-3">
-              {accepted.map((r) => {
-                const friendId =
-                  r.requester_id === user.id ? r.addressee_id : r.requester_id;
-                const p = profileById.get(friendId);
-                const name = p?.display_name ?? p?.username ?? "your friend";
-                return (
-                  <li
-                    key={r.id}
-                    className="rounded-2xl bg-surface border border-line px-4 py-3 flex items-center gap-3"
-                  >
-                    <Avatar name={name} url={p?.avatar_url} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-sans text-sm font-semibold text-ink truncate">
-                        {name}
-                      </p>
-                      <p className="font-sans text-xs text-muted truncate">
-                        @{p?.username}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        {/* Outgoing pending — light footer */}
-        {outgoingPending.length > 0 && (
-          <section className="mt-10">
-            <h2 className="font-sans text-xs tracking-widest uppercase text-muted">
-              Sent
-            </h2>
-            <ul className="mt-3 space-y-2">
-              {outgoingPending.map((r) => {
-                const p = profileById.get(r.addressee_id);
-                const name = p?.display_name ?? p?.username ?? "someone";
-                return (
-                  <li
-                    key={r.id}
-                    className="font-sans text-xs text-muted px-1"
-                  >
-                    waiting on {name}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-      </div>
+    <main
+      className={`${lora.variable} ${jakarta.variable} relative z-10 flex-1 overflow-y-auto px-5 pb-8 pt-6`}
+    >
+      <FriendsScreen
+        sent={sent ? decodeURIComponent(sent) : null}
+        error={error ? decodeURIComponent(error) : null}
+        accepted={accepted}
+        incomingPending={incomingPending}
+        outgoingPending={outgoingPending}
+      />
     </main>
   );
 }
 
+function toFriend(
+  row: FriendshipRow,
+  friendId: string,
+  profileById: Map<string, ProfileRow>,
+): AcceptedFriend | PendingFriend {
+  const profile = profileById.get(friendId);
+  const username = profile?.username ?? "friend";
+
+  return {
+    friendshipId: row.id,
+    displayName: profile?.display_name ?? username,
+    username,
+    avatarUrl: profile?.avatar_url ?? null,
+  };
+}
