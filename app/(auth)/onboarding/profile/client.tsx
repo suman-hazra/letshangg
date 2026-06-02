@@ -1,8 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { saveOnboardingAvatar } from "./actions";
+import { uploadOnboardingAvatar } from "./actions";
 
 const MAX_BYTES = 2_000_000;
 const ACCEPTED_MIMES = ["image/jpeg", "image/png", "image/webp"];
@@ -44,7 +43,7 @@ export function UsernameField({ defaultValue }: { defaultValue: string }) {
   );
 }
 
-export function OnboardingAvatarUploader({ userId }: { userId: string }) {
+export function OnboardingAvatarUploader() {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, startUpload] = useTransition();
@@ -66,31 +65,16 @@ export function OnboardingAvatarUploader({ userId }: { userId: string }) {
     setError(null);
 
     startUpload(async () => {
-      const supabase = createClient();
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `${userId}/avatar.${ext}`;
+      const fd = new FormData();
+      fd.set("photo", file);
+      const result = await uploadOnboardingAvatar(fd);
 
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, {
-          cacheControl: "60",
-          upsert: true,
-          contentType: file.type,
-        });
-
-      if (upErr) {
-        setError(upErr.message);
+      if (result.error) {
+        setError(result.error);
         return;
       }
 
-      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-      const publicUrl = `${pub.publicUrl}?v=${Date.now()}`;
-
-      const fd = new FormData();
-      fd.set("avatar_url", publicUrl);
-      await saveOnboardingAvatar(fd);
-
-      setUrl(publicUrl);
+      setUrl(result.url ?? null);
     });
   }
 

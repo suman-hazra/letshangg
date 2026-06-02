@@ -2,8 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
+const AVATAR_MAX_BYTES = 2_000_000;
+const AVATAR_MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 export async function saveProfile(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
@@ -52,18 +59,53 @@ export async function saveProfile(formData: FormData) {
   redirect("/onboarding/preferences-intro");
 }
 
-export async function saveOnboardingAvatar(formData: FormData) {
-  const avatar_url = String(formData.get("avatar_url") ?? "").trim();
-  if (!avatar_url) return;
+export async function uploadOnboardingAvatar(formData: FormData) {
+  const photo = formData.get("photo");
+  if (!photo || typeof photo === "string") {
+    return { error: "Choose a photo to upload." };
+  }
+
+  if (!Object.keys(AVATAR_MIME_TO_EXT).includes(photo.type)) {
+    return { error: "Photo must be a JPG, PNG, or WebP." };
+  }
+
+  if (photo.size > AVATAR_MAX_BYTES) {
+    return { error: "Photo must be under 2 MB." };
+  }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: "Log in to upload a photo." };
 
-  await supabase
+  const admin = createAdminClient();
+  const ext = AVATAR_MIME_TO_EXT[photo.type] ?? "jpg";
+  const path = `${user.id}/avatar.${ext}`;
+
+  const { error: uploadError } = await admin.storage
+    .from("avatars")
+    .upload(path, photo, {
+      cacheControl: "60",
+      upsert: true,
+      contentType: photo.type,
+    });
+
+  if (uploadError) {
+    return { error: uploadError.message };
+  }
+
+  const { data } = admin.storage.from("avatars").getPublicUrl(path);
+  const avatar_url = `${data.publicUrl}?v=${Date.now()}`;
+
+  const { error: profileError } = await admin
     .from("profiles")
     .update({ avatar_url })
     .eq("id", user.id);
+
+  if (profileError) {
+    return { error: profileError.message };
+  }
+
+  return { url: avatar_url };
 }

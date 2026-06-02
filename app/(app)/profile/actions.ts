@@ -38,24 +38,66 @@ export async function saveDisplayName(formData: FormData) {
   redirect("/profile?saved=name");
 }
 
-export async function saveAvatarUrl(formData: FormData) {
-  const avatar_url = String(formData.get("avatar_url") ?? "").trim();
-  if (!avatar_url) return;
+const AVATAR_MAX_BYTES = 2_000_000;
+const AVATAR_MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+export async function uploadAvatar(formData: FormData) {
+  const photo = formData.get("photo");
+  if (!photo || typeof photo === "string") {
+    return { error: "Choose a photo to upload." };
+  }
+
+  if (!Object.keys(AVATAR_MIME_TO_EXT).includes(photo.type)) {
+    return { error: "Photo must be a JPG, PNG, or WebP." };
+  }
+
+  if (photo.size > AVATAR_MAX_BYTES) {
+    return { error: "Photo must be under 2 MB." };
+  }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: "Log in to upload a photo." };
 
-  await supabase
+  const admin = createAdminClient();
+  const ext = AVATAR_MIME_TO_EXT[photo.type] ?? "jpg";
+  const path = `${user.id}/avatar.${ext}`;
+
+  const { error: uploadError } = await admin.storage
+    .from("avatars")
+    .upload(path, photo, {
+      cacheControl: "60",
+      upsert: true,
+      contentType: photo.type,
+    });
+
+  if (uploadError) {
+    return { error: uploadError.message };
+  }
+
+  const { data } = admin.storage.from("avatars").getPublicUrl(path);
+  const avatar_url = `${data.publicUrl}?v=${Date.now()}`;
+
+  const { error: profileError } = await admin
     .from("profiles")
     .update({ avatar_url })
     .eq("id", user.id);
 
+  if (profileError) {
+    return { error: profileError.message };
+  }
+
   revalidatePath("/profile");
   revalidatePath("/home");
   revalidatePath("/friends");
+
+  return { url: avatar_url };
 }
 
 export async function signOut() {

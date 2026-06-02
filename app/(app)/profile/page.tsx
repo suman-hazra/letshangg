@@ -62,7 +62,6 @@ export default async function ProfilePage({
 
         <div className="mb-8 mt-8 flex flex-col items-center">
           <AvatarEditor
-            userId={user.id}
             initialUrl={profile.avatar_url}
             initial={
               (profile.display_name ?? profile.username ?? "?")

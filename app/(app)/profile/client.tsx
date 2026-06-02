@@ -1,18 +1,15 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { deleteProfile, saveAvatarUrl } from "./actions";
+import { deleteProfile, uploadAvatar } from "./actions";
 
 const MAX_BYTES = 2_000_000; // 2 MB
 const ACCEPTED_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
 export function AvatarEditor({
-  userId,
   initialUrl,
   initial,
 }: {
-  userId: string;
   initialUrl: string | null;
   initial: string;
 }) {
@@ -41,34 +38,16 @@ export function AvatarEditor({
     setError(null);
 
     startUpload(async () => {
-      const supabase = createClient();
-      // Path: <userId>/avatar.<ext> — overwrite on every upload.
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `${userId}/avatar.${ext}`;
+      const fd = new FormData();
+      fd.set("photo", file);
+      const result = await uploadAvatar(fd);
 
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, {
-          cacheControl: "60",
-          upsert: true,
-          contentType: file.type,
-        });
-
-      if (upErr) {
-        setError(upErr.message);
+      if (result.error) {
+        setError(result.error);
         return;
       }
 
-      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-      // Bust caches for the same path by appending a version query param.
-      const publicUrl = `${pub.publicUrl}?v=${Date.now()}`;
-
-      // Persist to profiles.avatar_url via server action.
-      const fd = new FormData();
-      fd.set("avatar_url", publicUrl);
-      await saveAvatarUrl(fd);
-
-      setUrl(publicUrl);
+      setUrl(result.url ?? null);
     });
   }
 

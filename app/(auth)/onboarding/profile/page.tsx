@@ -66,7 +66,6 @@ export default async function ProfilePage({
 
   if (!user && !isPreview) redirect("/login");
 
-  const userId = user?.id ?? "00000000-0000-4000-8000-000000000000";
   const { data: profile } = user
     ? await supabase
         .from("profiles")
@@ -116,7 +115,7 @@ export default async function ProfilePage({
 
         {/* Avatar uploader */}
         <div className="mt-6">
-          <OnboardingAvatarUploader userId={userId} />
+          <OnboardingAvatarUploader />
         </div>
 
         {/* Form */}
