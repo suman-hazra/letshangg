@@ -86,27 +86,55 @@ export default async function HomePage() {
   }
 
   if (!hang) {
+    const { count: friendCount } = await supabase
+      .from("friendships")
+      .select("id", { count: "exact", head: true })
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+      .eq("status", "accepted");
+
+    const hasFriends = (friendCount ?? 0) > 0;
+
     return (
       <main className="flex-1 flex flex-col items-center px-6 pb-12">
         <div className="flex-1 flex items-center justify-center w-full max-w-[430px]">
-          <div className="text-center">
-            <h1 className="font-serif text-3xl text-ink leading-tight">
-              You&apos;re all
-              <br />
-              caught up.
-            </h1>
-            <p className="mt-6 font-sans text-base text-muted">
-              New hangs surface when you or a friend updates preferences.
-            </p>
-            <form action={refreshHangs} className="mt-8">
-              <button
-                type="submit"
-                className="font-sans text-sm text-accent underline underline-offset-4"
+          {hasFriends ? (
+            <div className="text-center">
+              <h1 className="font-serif text-3xl text-ink leading-tight">
+                You&apos;re all
+                <br />
+                caught up.
+              </h1>
+              <p className="mt-6 font-sans text-base text-muted">
+                New hangs surface when you or a friend updates their preferences.
+              </p>
+              <form action={refreshHangs} className="mt-8">
+                <button
+                  type="submit"
+                  className="font-sans text-sm text-accent underline underline-offset-4"
+                >
+                  Check for new hangs
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="text-center">
+              <div className="text-4xl mb-6" aria-hidden>👋</div>
+              <h1 className="font-serif text-3xl text-ink leading-tight">
+                Add friends to
+                <br />
+                get started.
+              </h1>
+              <p className="mt-6 font-sans text-base text-muted leading-relaxed">
+                When you and a friend both like the same activity, a hang suggestion will show up right here.
+              </p>
+              <a
+                href="/friends"
+                className="mt-8 inline-block rounded-full bg-ink px-7 py-3 font-sans text-sm font-medium text-surface"
               >
-                Check for new hangs
-              </button>
-            </form>
-          </div>
+                Add friends
+              </a>
+            </div>
+          )}
         </div>
       </main>
     );

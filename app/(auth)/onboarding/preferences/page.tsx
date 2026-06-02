@@ -131,7 +131,7 @@ export default async function PreferencesPage({
 
   // All done — onboarding complete.
   if (remaining.length === 0) {
-    redirect("/onboarding/finding-hangs");
+    redirect("/home");
   }
 
   const card = remaining[0];
