@@ -69,16 +69,12 @@ export default async function MatchPage({
   const myAvatar = meResult.data?.avatar_url ?? null;
   const friendAvatar = friendResult.data?.avatar_url ?? null;
 
-  // sms: deep link — encoded body, no recipient (user picks from contacts).
-  const smsBody = `hey ${friend} — ${hang.prompt_copy} matched via letshangg`;
-  const smsHref = `sms:?body=${encodeURIComponent(smsBody)}`;
-
   return (
     <main
       className={`${lora.variable} ${jakarta.variable} flex min-h-0 flex-1 flex-col`}
     >
       <header className="h-[58px] shrink-0 border-b border-[rgba(140,192,235,0.22)] bg-white/55 backdrop-blur-2xl">
-        <div className="mx-auto flex h-full w-full max-w-[430px] items-center px-5">
+        <div className="mx-auto flex h-full w-full max-w-[430px] items-center justify-between px-5">
           <Link
             href="/home"
             className="relative h-8 w-[57px] overflow-hidden opacity-90 transition active:opacity-60"
@@ -93,6 +89,13 @@ export default async function MatchPage({
               className="select-none object-contain"
               priority
             />
+          </Link>
+          <Link
+            href="/home"
+            aria-label="Back to swiping"
+            className="grid h-9 w-9 place-items-center rounded-xl text-[#9AACBA] transition active:opacity-60"
+          >
+            <CloseIcon />
           </Link>
         </div>
       </header>
@@ -150,12 +153,12 @@ export default async function MatchPage({
               Open Conversation
               <ArrowRight />
             </Link>
-            <a
-              href={smsHref}
+            <Link
+              href="/home"
               className="mt-3 inline-block font-[family-name:var(--font-match-sans)] text-[12px] text-[#9AACBA] transition hover:text-[#4A6173]"
             >
-              or text via Messages
-            </a>
+              Maybe later — keep swiping
+            </Link>
           </div>
         </div>
       </div>
@@ -217,6 +220,25 @@ function MatchAvatar({
         {label}
       </p>
     </div>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
   );
 }
 

@@ -18,7 +18,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateWarmCopy, pickFallbackCopy } from "@/lib/copy";
 
-export const MAX_HANGS_PER_FRIEND = 2;
+export const MAX_HANGS_PER_FRIEND = 1;
 
 /**
  * Pure function: given a user's YAY set, each friend's YAY set, and the
