@@ -118,6 +118,15 @@ messages (
   content text NOT NULL,
   created_at timestamptz DEFAULT now()
 )
+
+-- Direct messages between accepted friends (no match required)
+friendship_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  friendship_id uuid REFERENCES friendships(id) ON DELETE CASCADE,
+  sender_id uuid REFERENCES profiles(id),
+  content text NOT NULL CHECK (char_length(content) BETWEEN 1 AND 2000),
+  created_at timestamptz DEFAULT now()
+)
 ```
 
 ### Row Level Security
@@ -126,6 +135,7 @@ messages (
 - `friendships`: readable by either party, writable by requester (create) or addressee (update status)
 - `hangs`: readable by user_a or user_b only, writable by respective user (their swipe column)
 - `messages`: readable/writable by sender or recipient of the hang
+- `friendship_messages`: readable/writable by either party of the accepted friendship
 
 ---
 
@@ -134,17 +144,25 @@ messages (
 ```
 /app
   /(auth)
-    /login          → Google OAuth sign-in
+    /login                    → Google OAuth sign-in
     /onboarding
-      /profile      → username, display name, age, city, optional photo
-      /preferences  → swipe through 15–20 preference cards (yay/nay)
-  /(app)            → protected routes, mobile shell layout
-    /home           → hang suggestions (swipe interface)
+      /profile                → username, display name, age, city, optional photo
+      /preferences-intro      → intro screen before the quiz
+      /preferences            → swipe through ~30 preference cards (yay/nay/meh)
+  /(app)                      → protected routes, mobile shell layout
+    /home                     → hang suggestions (swipe interface)
+    /match/[id]               → match moment screen (no nav)
+      /chat                   → real-time chat for a matched hang
     /friends
-      /index        → friend list + pending requests
-      /add          → search by username, send request
-    /matches        → matched hangs, open conversations
-    /profile        → your profile, edit preferences
+      /index                  → friend list + pending requests + matches section
+      /add                    → search by username, send request
+      /invite                 → shareable link + QR code
+      /friended               → confirmation moment screen after accepting a request (no nav)
+      /[friendshipId]/chat    → direct message chat between accepted friends
+    /profile                  → your profile, edit preferences, sign out
+      /preferences            → toggle YAY/NAY on activities
+
+  /i/[username]               → invite-link landing (outside (app) layout)
 ```
 
 ---
@@ -178,7 +196,7 @@ For each accepted friend of the current user:
   - Find intersection (shared YAYs)
   - For each shared preference, check if a hang already exists between this pair for this preference
   - If not → create a hang row (swipe_a and swipe_b both null)
-  - Limit: max 2 new hangs per friend per run to avoid flooding
+  - Limit: max 1 new hang per friend per run (MAX_HANGS_PER_FRIEND = 1)
 ```
 
 Surface at most 10 hangs at a time on `/home`.
@@ -192,10 +210,15 @@ Surface at most 10 hangs at a time on `/home`.
 - Trigger a match notification/screen moment
 
 ### 5. Matches & Messaging
-- `/matches` shows all matched hangs
-- Tap a match → opens a simple chat thread (messages table)
-- Basic send/receive, Supabase Realtime for live updates
+- Matched hangs surface on the `/friends` tab in a "Matches" section at the top
+- Tap a match → `/match/[id]` moment screen → "Open Conversation" → `/match/[id]/chat`
+- Match chat uses the `messages` table; Supabase Realtime for live updates
 - No read receipts needed for MVP
+
+### 6. Direct Friend Messaging
+- Every accepted friend row has a chat bubble icon → `/friends/[friendshipId]/chat`
+- Uses the `friendship_messages` table; no match required
+- Same Realtime + optimistic-update pattern as match chat
 
 ---
 
@@ -251,7 +274,16 @@ Surface at most 10 hangs at a time on `/home`.
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=   # for server-side Hang Manager runs
+SUPABASE_SERVICE_ROLE_KEY=        # for server-side Hang Manager + admin ops
+
+OPENAI_API_KEY=                   # warm AI copy — optional, falls back to hand-written prompts
+RESEND_API_KEY=                   # friend request + match email notifications
+
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=
+
+NEXT_PUBLIC_SENTRY_DSN=           # optional
+SENTRY_AUTH_TOKEN=                # optional
 ```
 
 ---

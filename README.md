@@ -26,28 +26,37 @@ Neither person knows who said no to what. You only see the mutual yeses.
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js 14 (App Router) |
-| Styling | Tailwind CSS |
+| Framework | Next.js 16+ (App Router, React 19) |
+| Styling | Tailwind CSS v4 |
 | Auth | Supabase Auth (Google OAuth) |
 | Database | Supabase (Postgres) |
 | Realtime | Supabase Realtime (in-app chat) |
+| Email | Resend |
+| AI copy | OpenAI (warm hang prompts) |
+| Analytics | PostHog |
+| Error tracking | Sentry |
 | Language | TypeScript |
 | Deployment | Vercel |
 
 ---
 
-## Project Status
+## What's Shipped
 
-> 🚧 Early development — this is a portfolio project, actively being built.
+The app is feature-complete and live at [letshangg.app](https://letshangg.app).
 
-- [ ] Supabase schema + seed data
-- [ ] Auth & onboarding flow
-- [ ] Preference swiping
-- [ ] Friend requests
-- [ ] Hang Manager (matching algorithm)
-- [ ] Hang swiping UI
-- [ ] Match screen
-- [ ] In-app messaging
+- [x] Supabase schema + seed data (7 migrations)
+- [x] Google OAuth sign-in
+- [x] Onboarding — profile setup + 30-activity preference quiz with images
+- [x] Friend requests — username search + shareable invite links + QR codes
+- [x] Hang Manager — preference-intersection matching algorithm, 1 suggestion per friend pair
+- [x] Hang swiping UI — tap ✓/✕ cards on home feed
+- [x] Match screen — moment screen with warm AI-generated copy, "Maybe later" escape
+- [x] In-app chat — real-time match chat (Supabase Realtime) + direct friend messaging
+- [x] Friended confirmation screen — moment screen after accepting a friend request
+- [x] Invite accept flow — `/i/[username]` auto-creates friendship, routes through onboarding
+- [x] Profile editing — avatar upload, display name, preference editing
+- [x] Email notifications — friend requests and matches via Resend
+- [x] Analytics + error tracking — PostHog + Sentry
 
 ---
 
@@ -61,7 +70,7 @@ Neither person knows who said no to what. You only see the mutual yeses.
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/letshangg.git
+git clone https://github.com/suman-hazra/letshangg.git
 cd letshangg
 npm install
 ```
@@ -74,6 +83,15 @@ Create a `.env.local` file in the root:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+OPENAI_API_KEY=your_openai_key          # warm AI copy generation (optional — falls back to hand-written prompts)
+RESEND_API_KEY=your_resend_key          # friend request + match email notifications
+
+NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn  # optional
+SENTRY_AUTH_TOKEN=your_sentry_auth_token # optional
 ```
 
 ### Run Locally
