@@ -81,14 +81,14 @@ export default async function MatchPage({
         <div className="mx-auto flex h-full w-full max-w-[430px] items-center px-5">
           <Link
             href="/home"
-            className="relative h-10 w-[82px] overflow-hidden opacity-90 transition active:opacity-60"
+            className="relative h-8 w-[57px] overflow-hidden opacity-90 transition active:opacity-60"
             aria-label="letshangg home"
           >
             <Image
-              src="/letshangg-logo.png"
+              src="/logo-mark.png"
               alt="letshangg"
               fill
-              sizes="82px"
+              sizes="57px"
               draggable={false}
               className="select-none object-contain"
               priority
