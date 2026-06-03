@@ -1,0 +1,47 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+
+export async function sendFriendMessage(
+  prevState: unknown,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  const friendshipId = String(formData.get("friendship_id") ?? "");
+  const content = String(formData.get("content") ?? "").trim();
+
+  if (!friendshipId) return { error: "missing friendship" };
+  if (!content) return { error: "empty message" };
+  if (content.length > 2000) return { error: "message too long" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "not signed in" };
+
+  const { data: friendship } = await supabase
+    .from("friendships")
+    .select("id, requester_id, addressee_id, status")
+    .eq("id", friendshipId)
+    .maybeSingle();
+
+  if (
+    !friendship ||
+    friendship.status !== "accepted" ||
+    (friendship.requester_id !== user.id && friendship.addressee_id !== user.id)
+  ) {
+    return { error: "not friends" };
+  }
+
+  const { error } = await supabase.from("friendship_messages").insert({
+    friendship_id: friendshipId,
+    sender_id: user.id,
+    content,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/friends/${friendshipId}/chat`);
+  return {};
+}

@@ -162,6 +162,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      friendship_messages: {
+        Row: {
+          id: string;
+          friendship_id: string;
+          sender_id: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          friendship_id: string;
+          sender_id: string;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          friendship_id?: string;
+          sender_id?: string;
+          content?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       hangs: {
         Row: {
           id: string;

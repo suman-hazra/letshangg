@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { acceptFriendRequest, declineFriendRequest, removeFriend } from "./actions";
 
 type FriendProfile = {
@@ -231,6 +232,8 @@ function FriendRow({
   open: boolean;
   onToggle: () => void;
 }) {
+  const router = useRouter();
+
   return (
     <li
       className={`relative flex items-center gap-3 rounded-2xl border px-4 py-3 backdrop-blur-md transition ${
@@ -239,8 +242,23 @@ function FriendRow({
           : "border-white/70 bg-white/60"
       }`}
     >
-      <FriendAvatar friend={friend} index={index} />
-      <FriendText friend={friend} />
+      <button
+        type="button"
+        onClick={() => router.push(`/friends/${friend.friendshipId}/chat`)}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        aria-label={`Message ${friend.displayName}`}
+      >
+        <FriendAvatar friend={friend} index={index} />
+        <FriendText friend={friend} />
+      </button>
+      <button
+        type="button"
+        onClick={() => router.push(`/friends/${friend.friendshipId}/chat`)}
+        aria-label={`Message ${friend.displayName}`}
+        className="grid size-8 shrink-0 place-items-center rounded-xl text-[#B8C8D4] transition active:opacity-70 hover:text-[#6AAAD8]"
+      >
+        <ChatBubbleIcon />
+      </button>
       <button
         type="button"
         onClick={onToggle}
@@ -356,6 +374,14 @@ function FriendText({ friend }: { friend: FriendProfile }) {
         @{friend.username}
       </p>
     </div>
+  );
+}
+
+function ChatBubbleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
   );
 }
 

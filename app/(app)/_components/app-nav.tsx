@@ -35,8 +35,8 @@ const TABS: {
 export function AppNav({ matchCount }: { matchCount: number }) {
   const pathname = usePathname();
 
-  // Hide nav on the match screen itself — that screen is the moment, no chrome.
-  if (pathname.startsWith("/match/")) return null;
+  // Hide nav on moment screens — match and friended confirmation.
+  if (pathname.startsWith("/match/") || pathname === "/friends/friended") return null;
 
   return (
     <header className="relative z-10 h-[58px] w-full shrink-0 border-b border-[rgba(140,192,235,0.22)] bg-white/55 backdrop-blur-2xl">

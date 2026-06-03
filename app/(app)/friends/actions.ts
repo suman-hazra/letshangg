@@ -144,6 +144,13 @@ export async function acceptFriendRequest(formData: FormData) {
     redirect(`/friends?error=${encodeURIComponent(error.message)}`);
   }
 
+  // Fetch requester profile for the friended confirmation screen.
+  const { data: requesterProfile } = await supabase
+    .from("profiles")
+    .select("display_name, username, avatar_url")
+    .eq("id", row.requester_id)
+    .maybeSingle();
+
   // Fire matcher for both parties so hangs appear immediately for both.
   await Promise.allSettled([
     generateHangsForUser(row.requester_id),
@@ -152,7 +159,14 @@ export async function acceptFriendRequest(formData: FormData) {
 
   revalidatePath("/friends");
   revalidatePath("/home");
-  redirect("/friends");
+
+  const friendName =
+    requesterProfile?.display_name ?? requesterProfile?.username ?? "your friend";
+  const params = new URLSearchParams({ name: friendName });
+  if (requesterProfile?.avatar_url) {
+    params.set("avatar", requesterProfile.avatar_url);
+  }
+  redirect(`/friends/friended?${params.toString()}`);
 }
 
 export async function declineFriendRequest(formData: FormData) {
