@@ -55,9 +55,15 @@ const CITIES = [
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; preview?: string }>;
+  searchParams: Promise<{
+    city?: string;
+    display_name?: string;
+    error?: string;
+    preview?: string;
+    username?: string;
+  }>;
 }) {
-  const { error, preview } = await searchParams;
+  const { city, display_name, error, preview, username } = await searchParams;
   const isPreview = process.env.NODE_ENV !== "production" && preview === "1";
   const supabase = await createClient();
   const {
@@ -69,7 +75,7 @@ export default async function ProfilePage({
   const { data: profile } = user
     ? await supabase
         .from("profiles")
-        .select("id, username, display_name")
+        .select("id, username, display_name, city")
         .eq("id", user.id)
         .maybeSingle()
     : { data: null };
@@ -84,6 +90,14 @@ export default async function ProfilePage({
   if (profile?.display_name) {
     redirect("/onboarding/preferences-intro");
   }
+
+  const displayNameValue = display_name ?? profile?.display_name ?? "";
+  const usernameValue =
+    username ??
+    (profile?.username && !profile.username.startsWith("user_")
+      ? profile.username
+      : "");
+  const cityValue = city ?? profile?.city ?? "";
 
   return (
     <main
@@ -142,6 +156,7 @@ export default async function ProfilePage({
                 maxLength={40}
                 autoFocus
                 suppressHydrationWarning
+                defaultValue={displayNameValue}
                 className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
               />
             </div>
@@ -156,11 +171,7 @@ export default async function ProfilePage({
               </span>
             </div>
             <UsernameField
-              defaultValue={
-                profile?.username && !profile.username.startsWith("user_")
-                  ? profile.username
-                  : ""
-              }
+              defaultValue={usernameValue}
             />
           </div>
 
@@ -183,6 +194,7 @@ export default async function ProfilePage({
                 maxLength={60}
                 list="cities"
                 suppressHydrationWarning
+                defaultValue={cityValue}
                 className="w-full bg-transparent font-[family-name:var(--font-landing-sans)] text-[15px] font-medium text-[#1F2D3A] placeholder:text-[#B8C8D4] focus:outline-none"
               />
             </div>

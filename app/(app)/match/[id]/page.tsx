@@ -97,12 +97,12 @@ export default async function MatchPage({
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col items-center justify-between px-5 pb-9 pt-9">
+      <div className="mx-auto flex min-h-0 w-full max-w-[430px] flex-1 flex-col items-center px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-5">
         <div
           className={
             isFirstView
-              ? "match-enter flex h-full w-full flex-col items-center justify-between text-center"
-              : "flex h-full w-full flex-col items-center justify-between text-center"
+              ? "match-enter flex min-h-0 w-full flex-1 flex-col items-center text-center"
+              : "flex min-h-0 w-full flex-1 flex-col items-center text-center"
           }
         >
           <div className="inline-flex items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#F09070,#E87060)] px-6 py-3 font-[family-name:var(--font-match-sans)] text-[14px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_6px_20px_rgba(232,112,96,0.35)]">
@@ -111,21 +111,21 @@ export default async function MatchPage({
             <span aria-hidden>✨</span>
           </div>
 
-          <section className="w-full rounded-[28px] border border-white/85 bg-white/70 px-6 py-8 shadow-[0_8px_32px_rgba(44,62,78,0.1)] backdrop-blur-2xl">
-            <h1 className="font-[family-name:var(--font-match-serif)] text-[24px] font-bold leading-[1.3] text-[#2D3E4E]">
+          <section className="mt-5 w-full rounded-[26px] border border-white/85 bg-white/70 px-6 py-6 shadow-[0_8px_28px_rgba(44,62,78,0.1)] backdrop-blur-2xl">
+            <h1 className="font-[family-name:var(--font-match-serif)] text-[clamp(20px,5.4vw,23px)] font-bold leading-[1.26] text-[#2D3E4E]">
               {hang.prompt_copy}
             </h1>
           </section>
 
-          <div>
-            <div className="flex items-start justify-center gap-5">
+          <div className="mt-6">
+            <div className="flex items-start justify-center gap-4">
               <MatchAvatar
                 label="You"
                 name={me}
                 url={myAvatar}
                 variant="me"
               />
-              <span className="-mt-1 pt-5 text-[26px]" aria-hidden>
+              <span className="pt-[18px] text-[24px]" aria-hidden>
                 ✨
               </span>
               <MatchAvatar
@@ -135,17 +135,17 @@ export default async function MatchPage({
                 variant="friend"
               />
             </div>
-            <p className="mt-3 font-[family-name:var(--font-match-serif)] text-[15px] italic text-[#9AACBA]">
+            <p className="mt-4 font-[family-name:var(--font-match-serif)] text-[15px] italic text-[#7F96A8]">
               you both said yes
             </p>
           </div>
 
-          <div className="w-full">
+          <div className="mt-auto w-full pt-5">
             <Link
               href={`/match/${hang.id}/chat`}
               autoFocus
               aria-label={`Open conversation with ${friend}`}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] px-7 py-[17px] font-[family-name:var(--font-match-sans)] text-[15px] font-bold text-white shadow-[0_8px_24px_rgba(108,170,216,0.4)] transition active:opacity-80"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] px-7 py-[15px] font-[family-name:var(--font-match-sans)] text-[15px] font-bold text-white shadow-[0_8px_24px_rgba(108,170,216,0.4)] transition active:opacity-80"
             >
               Open Conversation
               <ArrowRight />
@@ -197,18 +197,18 @@ function MatchAvatar({
     : "bg-[#DCEEFA] text-[#4A7FA5]";
 
   return (
-    <div className="w-[80px] text-center">
+    <div className="w-[78px] text-center">
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={url}
           alt=""
-          className="mx-auto h-[60px] w-[60px] rounded-full border-[3px] border-white object-cover shadow-[0_4px_14px_rgba(44,62,78,0.12)]"
+          className="mx-auto h-14 w-14 rounded-full border-[3px] border-white object-cover shadow-[0_4px_14px_rgba(44,62,78,0.12)]"
         />
       ) : (
         <span
           aria-hidden
-          className={`mx-auto grid h-[60px] w-[60px] place-items-center rounded-full border-[3px] border-white font-[family-name:var(--font-match-serif)] text-[24px] font-bold shadow-[0_4px_14px_rgba(44,62,78,0.12)] ${colors}`}
+          className={`mx-auto grid h-14 w-14 place-items-center rounded-full border-[3px] border-white font-[family-name:var(--font-match-serif)] text-[23px] font-bold shadow-[0_4px_14px_rgba(44,62,78,0.12)] ${colors}`}
         >
           {name.charAt(0).toUpperCase()}
         </span>

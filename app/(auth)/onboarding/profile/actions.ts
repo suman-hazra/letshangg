@@ -18,17 +18,19 @@ export async function saveProfile(formData: FormData) {
   const city = String(formData.get("city") ?? "").trim() || null;
 
   if (!USERNAME_RE.test(username)) {
-    redirect(
-      `/onboarding/profile?error=${encodeURIComponent(
-        "username must be 3-20 letters, numbers, or underscores",
-      )}`,
-    );
+    redirect(profileErrorHref("username must be 3-20 letters, numbers, or underscores", {
+      username,
+      display_name,
+      city,
+    }));
   }
 
   if (!display_name) {
-    redirect(
-      `/onboarding/profile?error=${encodeURIComponent("display name required")}`,
-    );
+    redirect(profileErrorHref("display name required", {
+      username,
+      display_name,
+      city,
+    }));
   }
 
   const supabase = await createClient();
@@ -45,18 +47,31 @@ export async function saveProfile(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      redirect(
-        `/onboarding/profile?error=${encodeURIComponent(
-          `username "${username}" is taken — try another`,
-        )}`,
-      );
+      redirect(profileErrorHref(`username "${username}" is taken — try another`, {
+        username,
+        display_name,
+        city,
+      }));
     }
-    redirect(
-      `/onboarding/profile?error=${encodeURIComponent(error.message)}`,
-    );
+    redirect(profileErrorHref(error.message, { username, display_name, city }));
   }
 
   redirect("/onboarding/preferences-intro");
+}
+
+function profileErrorHref(
+  error: string,
+  values: {
+    username: string;
+    display_name: string;
+    city: string | null;
+  },
+) {
+  const params = new URLSearchParams({ error });
+  if (values.username) params.set("username", values.username);
+  if (values.display_name) params.set("display_name", values.display_name);
+  if (values.city) params.set("city", values.city);
+  return `/onboarding/profile?${params.toString()}`;
 }
 
 export async function uploadOnboardingAvatar(formData: FormData) {
