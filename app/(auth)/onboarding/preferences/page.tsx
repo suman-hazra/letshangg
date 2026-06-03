@@ -56,7 +56,7 @@ const PREVIEW_ACTIVITIES = [
   { label: "Get pizza", activity_key: "pizza" },
   { label: "Watch a movie", activity_key: "movie" },
   { label: "Grab drinks", activity_key: "drinks" },
-  { label: "Go to a house party", activity_key: "house_party" },
+  { label: "Have a house party", activity_key: "house_party" },
   { label: "Go dancing / night out", activity_key: "dancing" },
   { label: "Take a workout class", activity_key: "workout" },
   { label: "Bike ride", activity_key: "bike" },

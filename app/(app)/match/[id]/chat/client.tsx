@@ -17,19 +17,13 @@ export function ChatRoom({
   myId,
   friendName,
   friendAvatar,
-  activityLabel,
-  activityEmoji,
   initialMessages,
-  promptCopy,
 }: {
   hangId: string;
   myId: string;
   friendName: string;
   friendAvatar: string | null;
-  activityLabel: string;
-  activityEmoji: string;
   initialMessages: Message[];
-  promptCopy: string;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [draft, setDraft] = useState("");
@@ -102,67 +96,38 @@ export function ChatRoom({
     });
   }
 
-  const smsBody = `hey ${friendName} — ${activityLabel.toLowerCase()} this weekend? matched via letshangg`;
-  const smsHref = `sms:?body=${encodeURIComponent(smsBody)}`;
-
   return (
-    <main className="flex-1 flex flex-col px-0 pb-0">
-      {/* Top bar */}
-      <header className="px-6 py-3 border-b border-line flex items-center gap-3">
+    <main className="flex min-h-0 flex-1 flex-col px-0 pb-0">
+      <header className="flex h-[58px] shrink-0 items-center gap-3 border-b border-[rgba(140,192,235,0.22)] bg-white/55 px-6 backdrop-blur-2xl">
         <Link
           href={`/match/${hangId}`}
-          className="font-sans text-xs tracking-widest uppercase text-muted"
+          className="grid h-9 w-6 shrink-0 place-items-center text-[#6AAAD8] transition active:opacity-60"
           aria-label="Back to match"
         >
-          ←
+          <BackIcon />
         </Link>
-        {friendAvatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={friendAvatar}
-            alt=""
-            className="h-9 w-9 rounded-full object-cover bg-accent-soft shrink-0"
-          />
-        ) : (
-          <span
-            aria-hidden
-            className="h-9 w-9 rounded-full bg-accent-soft inline-flex items-center justify-center font-serif text-base text-ink shrink-0"
-          >
-            {friendName.charAt(0).toUpperCase()}
-          </span>
-        )}
+        <ChatAvatar name={friendName} url={friendAvatar} size="sm" />
         <div className="flex-1 min-w-0">
-          <p className="font-sans text-sm font-semibold text-ink truncate">
+          <p className="truncate font-[family-name:var(--font-chat-sans)] text-[16px] font-bold text-[#2D3E4E]">
             {friendName}
           </p>
-          <p className="font-sans text-xs text-muted truncate">
-            <span aria-hidden>{activityEmoji}</span> {activityLabel}
-          </p>
         </div>
-        <a
-          href={smsHref}
-          className="h-9 px-3 rounded-full bg-surface border border-line text-ink text-xs font-semibold"
-        >
-          SMS
-        </a>
       </header>
 
-      {/* Context line */}
-      <div className="px-6 pt-4">
-        <p className="font-script text-base text-muted text-center">
-          {promptCopy}
-        </p>
-      </div>
-
-      {/* Message list */}
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto px-6 py-4 space-y-3"
+        className="flex-1 space-y-3 overflow-y-auto px-5 py-4"
       >
         {messages.length === 0 && (
-          <p className="font-sans text-sm text-muted text-center mt-12">
-            Say hi.
-          </p>
+          <div className="flex min-h-full flex-col items-center justify-center pb-20 text-center">
+            <ChatAvatar name={friendName} url={friendAvatar} size="lg" />
+            <p className="mt-4 font-[family-name:var(--font-chat-sans)] text-[16px] font-bold text-[#2D3E4E]">
+              {friendName}
+            </p>
+            <p className="mt-5 font-[family-name:var(--font-chat-serif)] text-[14px] italic text-[#9AACBA]">
+              Say hi.
+            </p>
+          </div>
         )}
         {messages.map((m) => (
           <MessageBubble
@@ -177,7 +142,7 @@ export function ChatRoom({
       {/* Composer */}
       <form
         onSubmit={submit}
-        className="px-4 py-3 border-t border-line bg-background flex items-end gap-2"
+        className="flex shrink-0 items-end gap-2 border-t border-[rgba(140,192,235,0.22)] bg-white/45 px-4 py-3 backdrop-blur-2xl"
       >
         <textarea
           value={draft}
@@ -191,21 +156,57 @@ export function ChatRoom({
           placeholder="Message…"
           rows={1}
           maxLength={2000}
-          className="flex-1 resize-none rounded-2xl bg-surface border border-line px-4 py-2.5 font-sans text-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink min-h-[44px] max-h-32"
+          className="min-h-[50px] max-h-32 flex-1 resize-none rounded-[24px] border border-[rgba(140,192,235,0.22)] bg-white/90 px-5 py-3.5 font-[family-name:var(--font-chat-sans)] text-[14px] text-[#2D3E4E] placeholder:text-[#B0C2CF] shadow-[0_4px_18px_rgba(44,62,78,0.06)] focus:border-[#8CC0EB] focus:outline-none"
         />
         <button
           type="submit"
           disabled={!draft.trim() || pending}
-          className="h-11 px-5 rounded-full bg-ink text-surface font-sans text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="grid h-[48px] w-[48px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] text-white shadow-[0_8px_20px_rgba(108,170,216,0.35)] transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Send message"
         >
-          Send
+          <SendIcon />
         </button>
       </form>
 
       {error && (
-        <p className="px-6 pb-3 font-sans text-xs text-danger">{error}</p>
+        <p className="bg-white/45 px-6 pb-3 font-[family-name:var(--font-chat-sans)] text-xs text-[#EF6458]">
+          {error}
+        </p>
       )}
     </main>
+  );
+}
+
+function ChatAvatar({
+  name,
+  url,
+  size,
+}: {
+  name: string;
+  url: string | null;
+  size: "sm" | "lg";
+}) {
+  const avatarSize = size === "lg" ? "h-[72px] w-[72px]" : "h-10 w-10";
+  const textSize = size === "lg" ? "text-[30px]" : "text-[16px]";
+
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt=""
+        className={`${avatarSize} shrink-0 rounded-full border-[3px] border-white object-cover shadow-[0_4px_14px_rgba(44,62,78,0.12)]`}
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-hidden
+      className={`${avatarSize} ${textSize} grid shrink-0 place-items-center rounded-full border-[3px] border-white bg-[#DCEEFA] font-[family-name:var(--font-chat-serif)] font-bold text-[#4A7FA5] shadow-[0_4px_14px_rgba(44,62,78,0.12)]`}
+    >
+      {name.charAt(0).toUpperCase()}
+    </span>
   );
 }
 
@@ -223,16 +224,16 @@ function MessageBubble({
       <div
         className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
           mine
-            ? "bg-ink text-surface rounded-br-sm"
-            : "bg-surface border border-line text-ink rounded-bl-sm"
+            ? "rounded-br-sm bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] text-white"
+            : "rounded-bl-sm border border-[rgba(140,192,235,0.22)] bg-white/85 text-[#2D3E4E]"
         }`}
       >
-        <p className="font-sans text-sm leading-snug whitespace-pre-wrap break-words">
+        <p className="whitespace-pre-wrap break-words font-[family-name:var(--font-chat-sans)] text-sm leading-snug">
           {content}
         </p>
         <p
-          className={`mt-1 font-sans text-[10px] ${
-            mine ? "text-surface/60" : "text-muted"
+          className={`mt-1 font-[family-name:var(--font-chat-sans)] text-[10px] ${
+            mine ? "text-white/70" : "text-[#9AACBA]"
           }`}
         >
           {formatTime(at)}
@@ -251,4 +252,42 @@ function formatTime(iso: string): string {
   } catch {
     return "";
   }
+}
+
+function BackIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m15 18-6-6 6-6" />
+      <path d="M21 12H9" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m22 2-7 20-4-9-9-4Z" />
+      <path d="M22 2 11 13" />
+    </svg>
+  );
 }

@@ -43,14 +43,14 @@ export function AppNav({ matchCount }: { matchCount: number }) {
       <div className="mx-auto flex h-full w-full max-w-[430px] items-center px-6">
         <Link
           href="/home"
-          className="relative h-8 w-[57px] shrink-0 overflow-hidden opacity-90 transition active:opacity-60"
+          className="relative h-10 w-[82px] shrink-0 overflow-hidden opacity-90 transition active:opacity-60"
           aria-label="letshangg home"
         >
           <Image
-            src="/logo-mark.png"
+            src="/letshangg-logo.png"
             alt="letshangg"
             fill
-            sizes="57px"
+            sizes="82px"
             draggable={false}
             className="select-none object-contain"
             priority

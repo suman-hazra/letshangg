@@ -45,7 +45,7 @@ Photo by <a href="https://unsplash.com/@nate_dumlao?utm_source=unsplash&utm_medi
 | Get pizza | No Revisions | [Unsplash](https://unsplash.com/photos/person-holding-sliced-pizza-on-white-ceramic-plate-jCvbQdgHxFo) |
 | Watch a movie | Felipe Bustillo | [Unsplash](https://unsplash.com/photos/2-women-sitting-on-blue-leather-chair-holding-white-and-red-plastic-cups-4VDRCoNuvE0) |
 | Grab drinks | Drew Beamer | [Unsplash](https://unsplash.com/photos/three-person-holding-clear-drinking-glasses-bTN-zKFy9uA) |
-| Go to a house party | Toa Heftiba | [Unsplash](https://unsplash.com/photos/woman-in-black-and-white-checkered-long-sleeve-shirt-sitting-beside-man-in-green-crew-neck-l_ExpFwwOEg) |
+| Have a house party | Toa Heftiba | [Unsplash](https://unsplash.com/photos/woman-in-black-and-white-checkered-long-sleeve-shirt-sitting-beside-man-in-green-crew-neck-l_ExpFwwOEg) |
 | Go dancing / night out | Nereid Ndreu | [Unsplash](https://unsplash.com/photos/a-group-of-people-dancing-at-a-party-5F1dhADm__o) |
 | Take a workout class | LOGAN WEAVER \| @LGNWVR | [Unsplash](https://unsplash.com/photos/woman-in-black-tank-top-and-black-leggings-lying-on-black-floor-u76Gd0hP5w4) |
 | Bike ride | Eirik Skarstein | [Unsplash](https://unsplash.com/photos/man-cycling-on-street-kr1S95OlIC8) |
@@ -94,7 +94,7 @@ Photo by <a href="https://unsplash.com/@pipe_fx?utm_source=unsplash&utm_medium=r
 Photo by <a href="https://unsplash.com/@dbeamer_jpg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Drew Beamer</a> on <a href="https://unsplash.com/photos/three-person-holding-clear-drinking-glasses-bTN-zKFy9uA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
 ```
 
-**Go to a house party**
+**Have a house party**
 ```html
 Photo by <a href="https://unsplash.com/@heftiba?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Toa Heftiba</a> on <a href="https://unsplash.com/photos/woman-in-black-and-white-checkered-long-sleeve-shirt-sitting-beside-man-in-green-crew-neck-l_ExpFwwOEg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
 ```

@@ -1,7 +1,21 @@
 import { notFound, redirect } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { SeenMarker } from "./client";
-import { Avatar } from "../../_components/avatar";
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-match-serif",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-match-sans",
+});
 
 export default async function MatchPage({
   params,
@@ -33,7 +47,7 @@ export default async function MatchPage({
   const friendId = isUserA ? hang.user_b : hang.user_a;
   const isFirstView = isUserA ? !hang.seen_a_at : !hang.seen_b_at;
 
-  const [meResult, friendResult, prefResult] = await Promise.all([
+  const [meResult, friendResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("display_name, username, avatar_url")
@@ -44,11 +58,6 @@ export default async function MatchPage({
       .select("display_name, username, avatar_url")
       .eq("id", friendId)
       .maybeSingle(),
-    supabase
-      .from("preference_options")
-      .select("label, activity_key")
-      .eq("id", hang.preference_id)
-      .maybeSingle(),
   ]);
 
   const me =
@@ -57,78 +66,97 @@ export default async function MatchPage({
     friendResult.data?.display_name ??
     friendResult.data?.username ??
     "your friend";
-  const activityLabel = prefResult.data?.label ?? "this";
   const myAvatar = meResult.data?.avatar_url ?? null;
   const friendAvatar = friendResult.data?.avatar_url ?? null;
 
   // sms: deep link — encoded body, no recipient (user picks from contacts).
-  const smsBody = `hey ${friend} — ${activityLabel.toLowerCase()} this weekend? matched via letshangg`;
+  const smsBody = `hey ${friend} — ${hang.prompt_copy} matched via letshangg`;
   const smsHref = `sms:?body=${encodeURIComponent(smsBody)}`;
 
   return (
-    <main className="min-h-dvh flex flex-col items-stretch px-6 pt-6 pb-10 bg-background">
-      <p className="font-sans text-xs tracking-widest uppercase text-muted">
-        letshangg
-      </p>
+    <main
+      className={`${lora.variable} ${jakarta.variable} flex min-h-0 flex-1 flex-col`}
+    >
+      <header className="h-[58px] shrink-0 border-b border-[rgba(140,192,235,0.22)] bg-white/55 backdrop-blur-2xl">
+        <div className="mx-auto flex h-full w-full max-w-[430px] items-center px-5">
+          <Link
+            href="/home"
+            className="relative h-10 w-[82px] overflow-hidden opacity-90 transition active:opacity-60"
+            aria-label="letshangg home"
+          >
+            <Image
+              src="/letshangg-logo.png"
+              alt="letshangg"
+              fill
+              sizes="82px"
+              draggable={false}
+              className="select-none object-contain"
+              priority
+            />
+          </Link>
+        </div>
+      </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center max-w-[430px] mx-auto w-full">
+      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col items-center justify-between px-5 pb-9 pt-9">
         <div
           className={
-            isFirstView ? "match-enter w-full text-center" : "w-full text-center"
+            isFirstView
+              ? "match-enter flex h-full w-full flex-col items-center justify-between text-center"
+              : "flex h-full w-full flex-col items-center justify-between text-center"
           }
         >
-          {/* MATCHED marker */}
-          <div className="flex items-center justify-center gap-2">
-            <span
-              className="inline-block h-1.5 w-1.5 rounded-full bg-accent"
-              aria-hidden
-            />
-            <span className="font-sans text-[11px] font-semibold tracking-[0.25em] uppercase text-ink">
-              Matched
-            </span>
+          <div className="inline-flex items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#F09070,#E87060)] px-6 py-3 font-[family-name:var(--font-match-sans)] text-[14px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_6px_20px_rgba(232,112,96,0.35)]">
+            <span aria-hidden>✨</span>
+            <span>Matched</span>
+            <span aria-hidden>✨</span>
           </div>
 
-          {/* Hero copy */}
-          <h1 className="mt-12 font-serif text-[44px] leading-[1.05] text-ink">
-            {hang.prompt_copy}
-          </h1>
+          <section className="w-full rounded-[28px] border border-white/85 bg-white/70 px-6 py-8 shadow-[0_8px_32px_rgba(44,62,78,0.1)] backdrop-blur-2xl">
+            <h1 className="font-[family-name:var(--font-match-serif)] text-[24px] font-bold leading-[1.3] text-[#2D3E4E]">
+              {hang.prompt_copy}
+            </h1>
+          </section>
 
-          {/* Avatars + heart */}
-          <div className="mt-14 flex items-center justify-center gap-4">
-            <Avatar name={me} url={myAvatar} size="lg" />
-            <HeartIcon />
-            <Avatar name={friend} url={friendAvatar} size="lg" />
+          <div>
+            <div className="flex items-start justify-center gap-5">
+              <MatchAvatar
+                label="You"
+                name={me}
+                url={myAvatar}
+                variant="me"
+              />
+              <span className="-mt-1 pt-5 text-[26px]" aria-hidden>
+                ✨
+              </span>
+              <MatchAvatar
+                label={friend}
+                name={friend}
+                url={friendAvatar}
+                variant="friend"
+              />
+            </div>
+            <p className="mt-3 font-[family-name:var(--font-match-serif)] text-[15px] italic text-[#9AACBA]">
+              you both said yes
+            </p>
           </div>
 
-          {/* Names */}
-          <div className="mt-3 flex items-center justify-center gap-12">
-            <span className="font-sans text-sm text-muted">{me}</span>
-            <span className="font-sans text-sm text-muted">{friend}</span>
+          <div className="w-full">
+            <Link
+              href={`/match/${hang.id}/chat`}
+              autoFocus
+              aria-label={`Open conversation with ${friend}`}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] px-7 py-[17px] font-[family-name:var(--font-match-sans)] text-[15px] font-bold text-white shadow-[0_8px_24px_rgba(108,170,216,0.4)] transition active:opacity-80"
+            >
+              Open Conversation
+              <ArrowRight />
+            </Link>
+            <a
+              href={smsHref}
+              className="mt-3 inline-block font-[family-name:var(--font-match-sans)] text-[12px] text-[#9AACBA] transition hover:text-[#4A6173]"
+            >
+              or text via Messages
+            </a>
           </div>
-
-          {/* Handwritten note */}
-          <p className="mt-10 font-script text-[22px] text-muted">
-            you both said yes
-          </p>
-
-          {/* Primary CTA — in-app chat */}
-          <a
-            href={`/match/${hang.id}/chat`}
-            autoFocus
-            aria-label={`Open conversation with ${friend}`}
-            className="mt-12 inline-flex h-12 min-h-[48px] w-full max-w-[280px] items-center justify-center gap-2 rounded-full bg-ink px-7 text-sm font-semibold text-surface transition hover:opacity-90 focus:outline-2 focus:outline-offset-4 focus:outline-accent"
-          >
-            Open Conversation
-            <ArrowRight />
-          </a>
-
-          {/* Secondary — drop into Messages instead */}
-          <a
-            href={smsHref}
-            className="mt-3 inline-block font-sans text-sm text-muted hover:text-ink transition"
-          >
-            or text via Messages
-          </a>
         </div>
       </div>
 
@@ -152,18 +180,43 @@ export default async function MatchPage({
   );
 }
 
-function HeartIcon() {
+function MatchAvatar({
+  label,
+  name,
+  url,
+  variant,
+}: {
+  label: string;
+  name: string;
+  url: string | null;
+  variant: "me" | "friend";
+}) {
+  const isMe = variant === "me";
+  const colors = isMe
+    ? "bg-[#F0E4FA] text-[#7A4FAA]"
+    : "bg-[#DCEEFA] text-[#4A7FA5]";
+
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="text-accent"
-      aria-hidden
-    >
-      <path d="M12 21s-7-4.5-9.5-9C0.5 8 3 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 4 0 6.5 4 4.5 8C19 16.5 12 21 12 21z" />
-    </svg>
+    <div className="w-[80px] text-center">
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt=""
+          className="mx-auto h-[60px] w-[60px] rounded-full border-[3px] border-white object-cover shadow-[0_4px_14px_rgba(44,62,78,0.12)]"
+        />
+      ) : (
+        <span
+          aria-hidden
+          className={`mx-auto grid h-[60px] w-[60px] place-items-center rounded-full border-[3px] border-white font-[family-name:var(--font-match-serif)] text-[24px] font-bold shadow-[0_4px_14px_rgba(44,62,78,0.12)] ${colors}`}
+        >
+          {name.charAt(0).toUpperCase()}
+        </span>
+      )}
+      <p className="mt-2 truncate font-[family-name:var(--font-match-sans)] text-[12px] font-bold text-[#2D3E4E]">
+        {label}
+      </p>
+    </div>
   );
 }
 

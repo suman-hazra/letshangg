@@ -1,6 +1,19 @@
 import { notFound, redirect } from "next/navigation";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { ChatRoom } from "./client";
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-chat-serif",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-chat-sans",
+});
 
 export default async function ChatPage({
   params,
@@ -18,9 +31,7 @@ export default async function ChatPage({
   // Confirm user is party to a matched hang.
   const { data: hang } = await supabase
     .from("hangs")
-    .select(
-      "id, user_a, user_b, preference_id, prompt_copy, matched",
-    )
+    .select("id, user_a, user_b, matched")
     .eq("id", hangId)
     .maybeSingle();
 
@@ -31,16 +42,11 @@ export default async function ChatPage({
 
   const friendId = isUserA ? hang.user_b : hang.user_a;
 
-  const [friendResult, prefResult, messagesResult] = await Promise.all([
+  const [friendResult, messagesResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("display_name, username, avatar_url")
       .eq("id", friendId)
-      .maybeSingle(),
-    supabase
-      .from("preference_options")
-      .select("label, emoji")
-      .eq("id", hang.preference_id)
       .maybeSingle(),
     supabase
       .from("messages")
@@ -54,19 +60,18 @@ export default async function ChatPage({
     friendResult.data?.username ??
     "your friend";
   const friendAvatar = friendResult.data?.avatar_url ?? null;
-  const activityLabel = prefResult.data?.label ?? "hang";
-  const activityEmoji = prefResult.data?.emoji ?? "🤝";
 
   return (
-    <ChatRoom
-      hangId={hang.id}
-      myId={user.id}
-      friendName={friendName}
-      friendAvatar={friendAvatar}
-      activityLabel={activityLabel}
-      activityEmoji={activityEmoji}
-      initialMessages={messagesResult.data ?? []}
-      promptCopy={hang.prompt_copy}
-    />
+    <div
+      className={`${lora.variable} ${jakarta.variable} flex min-h-0 flex-1 flex-col`}
+    >
+      <ChatRoom
+        hangId={hang.id}
+        myId={user.id}
+        friendName={friendName}
+        friendAvatar={friendAvatar}
+        initialMessages={messagesResult.data ?? []}
+      />
+    </div>
   );
 }

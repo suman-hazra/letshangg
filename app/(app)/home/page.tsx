@@ -1,8 +1,54 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { generateHangsForUser } from "@/lib/hang-manager";
 import { swipeHang, refreshHangs } from "./actions";
-import { Avatar } from "../_components/avatar";
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-home-serif",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-home-sans",
+});
+
+const ACTIVITY_EMOJI: Record<string, string> = {
+  coffee: "☕",
+  pizza: "🍕",
+  movie: "🎬",
+  drinks: "🍸",
+  house_party: "🏠",
+  dancing: "🪩",
+  workout: "💪",
+  bike: "🚲",
+  pickup_sport: "🏀",
+  rock_climbing: "🧗",
+  hike: "🥾",
+  park: "🌳",
+  sunset_walk: "🌅",
+  beach: "🏖️",
+  show: "🎤",
+  museum: "🏛️",
+  bookstore: "📚",
+  theater_comedy: "🎭",
+  cooking: "🍳",
+  pottery_class: "🎨",
+  thrift: "🛍️",
+  bowling: "🎳",
+  game_night: "🎲",
+  arcade_mini_golf: "🕹️",
+  ice_cream: "🍦",
+  restaurant: "🍽️",
+  self_care: "🧖",
+  day_trip: "🚗",
+  escape_room: "🔐",
+  festival: "🎪",
+};
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -44,6 +90,28 @@ async function fetchPendingHang(
   ].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
   return candidates[0] ?? null;
+}
+
+async function countPendingHangs(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<number> {
+  const [{ count: countA }, { count: countB }] = await Promise.all([
+    supabase
+      .from("hangs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_a", userId)
+      .is("swipe_a", null)
+      .eq("matched", false),
+    supabase
+      .from("hangs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_b", userId)
+      .is("swipe_b", null)
+      .eq("matched", false),
+  ]);
+
+  return (countA ?? 0) + (countB ?? 0);
 }
 
 export default async function HomePage() {
@@ -95,22 +163,24 @@ export default async function HomePage() {
     const hasFriends = (friendCount ?? 0) > 0;
 
     return (
-      <main className="flex-1 flex flex-col items-center px-6 pb-12">
+      <main
+        className={`${lora.variable} ${jakarta.variable} flex flex-1 flex-col items-center px-6 pb-12`}
+      >
         <div className="flex-1 flex items-center justify-center w-full max-w-[430px]">
           {hasFriends ? (
             <div className="text-center">
-              <h1 className="font-serif text-3xl text-ink leading-tight">
+              <h1 className="font-[family-name:var(--font-home-serif)] text-3xl leading-tight text-[#2D3E4E]">
                 You&apos;re all
                 <br />
                 caught up.
               </h1>
-              <p className="mt-6 font-sans text-base text-muted">
+              <p className="mt-6 font-[family-name:var(--font-home-sans)] text-base text-[#4A6173]">
                 New hangs surface when you or a friend updates their preferences.
               </p>
               <form action={refreshHangs} className="mt-8">
                 <button
                   type="submit"
-                  className="font-sans text-sm text-accent underline underline-offset-4"
+                  className="font-[family-name:var(--font-home-sans)] text-sm font-bold text-[#6AAAD8] underline underline-offset-4"
                 >
                   Check for new hangs
                 </button>
@@ -119,20 +189,20 @@ export default async function HomePage() {
           ) : (
             <div className="text-center">
               <div className="text-4xl mb-6" aria-hidden>👋</div>
-              <h1 className="font-serif text-3xl text-ink leading-tight">
+              <h1 className="font-[family-name:var(--font-home-serif)] text-3xl leading-tight text-[#2D3E4E]">
                 Add friends to
                 <br />
                 get started.
               </h1>
-              <p className="mt-6 font-sans text-base text-muted leading-relaxed">
+              <p className="mt-6 font-[family-name:var(--font-home-sans)] text-base leading-relaxed text-[#4A6173]">
                 When you and a friend both like the same activity, a hang suggestion will show up right here.
               </p>
-              <a
+              <Link
                 href="/friends"
-                className="mt-8 inline-block rounded-full bg-ink px-7 py-3 font-sans text-sm font-medium text-surface"
+                className="mt-8 inline-block rounded-full bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] px-7 py-3 font-[family-name:var(--font-home-sans)] text-sm font-bold text-white shadow-[0_8px_20px_rgba(108,170,216,0.35)]"
               >
                 Add friends
-              </a>
+              </Link>
             </div>
           )}
         </div>
@@ -162,31 +232,60 @@ export default async function HomePage() {
   const friendName =
     friendProfile?.display_name ?? friendProfile?.username ?? "your friend";
   const friendAvatar = friendProfile?.avatar_url ?? null;
-  const activityEmoji = prefRow?.emoji ?? "🤝";
+  const activityEmoji =
+    prefRow?.emoji ?? ACTIVITY_EMOJI[prefRow?.activity_key ?? ""] ?? "🤝";
   const activityLabel = prefRow?.label ?? "hang";
+  const pendingCount = await countPendingHangs(supabase, user.id);
 
   return (
-    <main className="flex-1 flex flex-col items-center px-6 pb-12">
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[430px]">
-        {/* Card */}
-        <div className="w-full rounded-2xl bg-surface border border-line px-8 py-12 text-center">
-          <div className="flex justify-center">
-            <Avatar name={friendName} url={friendAvatar} size="md" />
-          </div>
-          <p className="mt-3 font-sans text-sm text-muted">{friendName}</p>
+    <main
+      className={`${lora.variable} ${jakarta.variable} flex flex-1 flex-col items-center px-5 pb-7 pt-5`}
+    >
+      <div className="flex w-full max-w-[430px] items-center justify-between gap-4">
+        <p className="flex min-w-0 items-center gap-2 font-[family-name:var(--font-home-sans)] text-[12px] font-bold leading-none">
+          <span className="text-[14px]" aria-hidden>
+            ✨
+          </span>
+          <span className="truncate">
+            <span className="text-[#7A4FAA]">{friendName}</span>{" "}
+            <span className="text-[#9AACBA]">wants to hang</span>
+          </span>
+        </p>
+        <p className="shrink-0 font-[family-name:var(--font-home-sans)] text-[11px] font-bold text-[#B0C2CF]">
+          1 of {Math.max(pendingCount, 1)}
+        </p>
+      </div>
 
-          <div className="mt-6 text-5xl leading-none" aria-hidden>
-            {activityEmoji}
+      <div className="flex min-h-0 w-full max-w-[430px] flex-1 flex-col items-center justify-center">
+        <div className="relative w-full rotate-[-1.5deg] rounded-[30px] border-[3px] border-white bg-white px-6 pb-7 pt-12 text-center shadow-[0_14px_36px_rgba(44,62,78,0.16)]">
+          <div className="absolute left-1/2 top-0 grid h-16 w-16 -translate-x-1/2 -translate-y-6 place-items-center rounded-full border-4 border-white bg-[#FFEACC] text-[30px] shadow-[0_6px_18px_rgba(44,62,78,0.16)]">
+            <span aria-hidden>{activityEmoji}</span>
           </div>
 
-          <p className="mt-6 font-serif text-2xl leading-snug text-ink">
-            {hang.prompt_copy}
+          <p className="mx-auto inline-flex max-w-full rounded-full bg-[rgba(140,192,235,0.18)] px-3 py-1 font-[family-name:var(--font-home-sans)] text-[10px] font-bold uppercase tracking-[0.08em] text-[#4A7FA5]">
+            <span className="truncate">{activityLabel}</span>
           </p>
-          <p className="sr-only">activity: {activityLabel}</p>
+
+          <div className="relative mt-5 rounded-[22px] border border-[#FCEFC7] bg-[#FFF9E8] px-5 py-5">
+            <p className="font-[family-name:var(--font-home-serif)] text-[20px] font-medium leading-[1.35] text-[#2D3E4E]">
+              {hang.prompt_copy}
+            </p>
+            <span
+              className="absolute bottom-0 left-1/2 h-4 w-4 -translate-x-1/2 translate-y-2 rotate-45 border-b border-r border-[#FCEFC7] bg-[#FFF9E8]"
+              aria-hidden
+            />
+          </div>
+
+          <div className="mt-7 flex items-center justify-center gap-2">
+            <DisplayAvatar name={friendName} url={friendAvatar} />
+            <span className="font-[family-name:var(--font-home-sans)] text-[13px] font-bold text-[#2D3E4E]">
+              {friendName}
+            </span>
+            <span aria-hidden>🤝</span>
+          </div>
         </div>
 
-        {/* Verdict buttons */}
-        <div className="mt-8 flex items-center justify-center gap-6">
+        <div className="mt-7 flex items-center justify-center gap-5">
           <form action={swipeHang}>
             <input type="hidden" name="hang_id" value={hang.id} />
             <input type="hidden" name="verdict" value="left" />
@@ -199,7 +298,7 @@ export default async function HomePage() {
           </form>
         </div>
 
-        <p className="mt-8 font-script text-lg text-muted">
+        <p className="mt-4 font-[family-name:var(--font-home-serif)] text-[12px] italic text-[#AFBEC9]">
           no one sees what you skip.
         </p>
       </div>
@@ -217,15 +316,40 @@ function VerdictButton({
   return (
     <button
       type="submit"
-      className={`h-16 w-16 rounded-full flex items-center justify-center transition active:scale-95 ${
+      className={`flex h-[68px] w-[68px] flex-col items-center justify-center rounded-[22px] transition active:scale-90 ${
         isYay
-          ? "bg-ink text-surface"
-          : "bg-surface border border-line text-ink"
+          ? "bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] text-white shadow-[0_8px_20px_rgba(108,170,216,0.4)]"
+          : "bg-[#FFE3DC] text-[#EF6458] shadow-[0_6px_16px_rgba(239,100,88,0.22)]"
       }`}
       {...rest}
     >
       {isYay ? <CheckIcon /> : <XIcon />}
+      <span className="mt-1 font-[family-name:var(--font-home-sans)] text-[9px] font-bold leading-none">
+        {isYay ? "YES!" : "NAH"}
+      </span>
     </button>
+  );
+}
+
+function DisplayAvatar({ name, url }: { name: string; url: string | null }) {
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt=""
+        className="h-8 w-8 rounded-full object-cover"
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-hidden
+      className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E4FA] font-[family-name:var(--font-home-serif)] text-[13px] font-bold text-[#7A4FAA]"
+    >
+      {name.charAt(0).toUpperCase()}
+    </span>
   );
 }
 
@@ -237,7 +361,7 @@ function CheckIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
@@ -255,7 +379,7 @@ function XIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
