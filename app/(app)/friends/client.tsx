@@ -18,9 +18,20 @@ export type PendingFriend = FriendProfile & {
   friendshipId: string;
 };
 
+export type Match = {
+  hangId: string;
+  promptCopy: string;
+  friendDisplayName: string;
+  friendUsername: string;
+  friendAvatarUrl: string | null;
+  activityEmoji: string;
+  activityLabel: string;
+};
+
 type FriendsScreenProps = {
   sent: string | null;
   error: string | null;
+  matches: Match[];
   accepted: AcceptedFriend[];
   incomingPending: PendingFriend[];
   outgoingPending: PendingFriend[];
@@ -40,6 +51,7 @@ const AVATAR_COLORS = [
 export function FriendsScreen({
   sent,
   error,
+  matches,
   accepted,
   incomingPending,
   outgoingPending,
@@ -54,6 +66,19 @@ export function FriendsScreen({
       <p className="mb-6 mt-1 font-[family-name:var(--font-friends-sans)] text-[13px] leading-snug text-[#8A9CAB]">
         Add a friend to start seeing hangs you&apos;d both say yes to.
       </p>
+
+      {matches.length > 0 && (
+        <section className="mb-7">
+          <h2 className="mb-3 font-[family-name:var(--font-friends-sans)] text-[11px] font-bold uppercase tracking-[0.08em] text-[#9AACBA]">
+            Matches ({matches.length})
+          </h2>
+          <ul className="space-y-2.5">
+            {matches.map((match, index) => (
+              <MatchRow key={match.hangId} match={match} index={index} />
+            ))}
+          </ul>
+        </section>
+      )}
 
       {sent && (
         <p className="mb-4 rounded-2xl border border-white/70 bg-white/60 px-4 py-3 font-[family-name:var(--font-friends-sans)] text-sm text-[#2D3E4E] backdrop-blur-md">
@@ -142,6 +167,56 @@ export function FriendsScreen({
         </section>
       )}
     </div>
+  );
+}
+
+function MatchRow({ match, index }: { match: Match; index: number }) {
+  return (
+    <li>
+      <Link
+        href={`/match/${match.hangId}/chat`}
+        className="flex items-center gap-3 rounded-2xl border border-[rgba(232,133,90,0.25)] bg-[rgba(251,240,235,0.7)] px-4 py-3 backdrop-blur-md transition active:opacity-80"
+      >
+        <FriendAvatar
+          friend={{
+            displayName: match.friendDisplayName,
+            username: match.friendUsername,
+            avatarUrl: match.friendAvatarUrl,
+          }}
+          index={index}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-[family-name:var(--font-friends-sans)] text-sm font-bold text-[#2D3E4E]">
+            {match.friendDisplayName}
+          </p>
+          <p className="mt-0.5 truncate font-[family-name:var(--font-friends-sans)] text-[11px] text-[#9AACBA]">
+            {match.activityEmoji} {match.activityLabel}
+          </p>
+        </div>
+        <span className="text-[#E8855A]">
+          <ArrowRightIcon />
+        </span>
+      </Link>
+    </li>
+  );
+}
+
+function ArrowRightIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
   );
 }
 

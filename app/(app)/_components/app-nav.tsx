@@ -10,6 +10,7 @@ const TABS: {
   label: string;
   icon: (props: IconProps) => ReactNode;
   match: (p: string) => boolean;
+  badge?: number;
 }[] = [
   {
     href: "/home",
@@ -31,7 +32,7 @@ const TABS: {
   },
 ];
 
-export function AppNav() {
+export function AppNav({ matchCount }: { matchCount: number }) {
   const pathname = usePathname();
 
   // Hide nav on the match screen itself — that screen is the moment, no chrome.
@@ -60,17 +61,25 @@ export function AppNav() {
           {TABS.map((tab) => {
             const active = tab.match(pathname);
             const Icon = tab.icon;
+            const badge = tab.href === "/friends" && matchCount > 0 ? matchCount : 0;
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex h-12 min-w-12 flex-col items-center justify-center rounded-xl px-2 font-sans text-[10px] font-bold tracking-[0.04em] transition active:opacity-60 ${
+                className={`relative flex h-12 min-w-12 flex-col items-center justify-center rounded-xl px-2 font-sans text-[10px] font-bold tracking-[0.04em] transition active:opacity-60 ${
                   active
                     ? "bg-[rgba(140,192,235,0.1)] text-[#8CC0EB]"
                     : "text-[#9AACBA]"
                 }`}
               >
-                <Icon size={20} strokeWidth={2} />
+                <span className="relative">
+                  <Icon size={20} strokeWidth={2} />
+                  {badge > 0 && (
+                    <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E8855A] px-1 font-sans text-[9px] font-bold leading-none text-white">
+                      {badge > 99 ? "99+" : badge}
+                    </span>
+                  )}
+                </span>
                 <span className="mt-0.5">{tab.label}</span>
               </Link>
             );
