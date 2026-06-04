@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { signOut } from "@/app/(app)/profile/actions";
 
 const TABS: {
   href: string;
@@ -33,11 +34,46 @@ const TABS: {
   },
 ];
 
-const MENU_LINKS = [
-  { href: "/about", label: "About" },
-  { href: "/contribute", label: "Contribute" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Terms" },
+const MENU_LINKS: {
+  href: string;
+  label: string;
+  icon: (props: IconProps) => ReactNode;
+  tileClassName: string;
+  iconClassName: string;
+  labelClassName: string;
+}[] = [
+  {
+    href: "/about",
+    label: "About Letshangg",
+    icon: InfoIcon,
+    tileClassName: "bg-[rgba(180,200,215,0.12)]",
+    iconClassName: "text-[#6A8EA0]",
+    labelClassName: "text-[#2D3E4E]",
+  },
+  {
+    href: "/contribute",
+    label: "Contribute",
+    icon: HeartIcon,
+    tileClassName: "bg-[rgba(140,192,235,0.15)]",
+    iconClassName: "text-[#6AAAD8]",
+    labelClassName: "text-[#4A8EC0]",
+  },
+  {
+    href: "/privacy",
+    label: "Privacy",
+    icon: ShieldIcon,
+    tileClassName: "bg-[rgba(180,200,215,0.12)]",
+    iconClassName: "text-[#6A8EA0]",
+    labelClassName: "text-[#2D3E4E]",
+  },
+  {
+    href: "/terms",
+    label: "Terms",
+    icon: FileTextIcon,
+    tileClassName: "bg-[rgba(180,200,215,0.12)]",
+    iconClassName: "text-[#6A8EA0]",
+    labelClassName: "text-[#2D3E4E]",
+  },
 ];
 
 export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
@@ -48,7 +84,11 @@ export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
   if (pathname.startsWith("/match/") || pathname === "/friends/friended") return null;
 
   return (
-    <header className="relative z-10 h-[58px] w-full shrink-0 border-b border-[rgba(140,192,235,0.22)] bg-white/55 backdrop-blur-2xl">
+    <header
+      className={`relative h-[58px] w-full shrink-0 border-b border-[rgba(140,192,235,0.22)] bg-white/55 backdrop-blur-2xl ${
+        isMenuOpen ? "z-50" : "z-10"
+      }`}
+    >
       <div className="mx-auto flex h-full w-full max-w-[430px] items-center px-6">
         <Link
           href="/home"
@@ -98,42 +138,80 @@ export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
           })}
         </nav>
         <div className="mx-2 h-6 w-px shrink-0 bg-[rgba(140,192,235,0.3)]" />
-        <div className="relative">
+        <button
+          type="button"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="app-menu"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          className={`relative z-40 grid h-10 w-10 shrink-0 place-items-center rounded-xl transition active:opacity-60 ${
+            isMenuOpen
+              ? "bg-[rgba(140,192,235,0.15)] text-[#4A6173]"
+              : "text-[#4A6173]"
+          }`}
+        >
+          {isMenuOpen ? (
+            <CloseIcon size={20} strokeWidth={2} />
+          ) : (
+            <MenuIcon size={22} strokeWidth={2} />
+          )}
+        </button>
+      </div>
+
+      {isMenuOpen && (
+        <>
           <button
             type="button"
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMenuOpen}
-            aria-controls="app-menu"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition active:opacity-60 ${
-              isMenuOpen
-                ? "bg-[rgba(140,192,235,0.12)] text-[#4A6173]"
-                : "text-[#4A6173]"
-            }`}
+            aria-label="Close menu"
+            className="fixed inset-0 z-20 bg-[rgba(21,41,58,0.18)] backdrop-blur-[2px]"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <div
+            id="app-menu"
+            className="fixed right-[max(16px,calc((100vw-430px)/2+16px))] top-[113px] z-30 w-[260px] rounded-[22px] border border-white/90 bg-white/80 shadow-[0_20px_56px_rgba(44,62,78,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-3xl"
           >
-            <MenuIcon size={22} strokeWidth={2} />
-          </button>
-
-          {isMenuOpen && (
-            <nav
-              id="app-menu"
-              aria-label="Menu"
-              className="absolute right-0 top-12 w-48 overflow-hidden rounded-2xl border border-[rgba(140,192,235,0.24)] bg-white/95 py-2 text-[#2D3E4E] shadow-[0_12px_28px_rgba(44,62,78,0.16)] backdrop-blur-2xl"
-            >
-              {MENU_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block px-4 py-3 font-sans text-[14px] font-bold transition active:bg-[rgba(140,192,235,0.12)]"
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <nav aria-label="Menu" className="px-3 py-1">
+              {MENU_LINKS.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center rounded-[14px] px-3 py-2.5 font-[family-name:var(--font-friends-sans)] transition active:bg-[rgba(140,192,235,0.12)]"
+                  >
+                    <span
+                      className={`grid size-8 shrink-0 place-items-center rounded-[10px] ${link.tileClassName} ${link.iconClassName}`}
+                    >
+                      <Icon size={16} strokeWidth={2} />
+                    </span>
+                    <span
+                      className={`ml-3 min-w-0 flex-1 truncate text-[14px] font-semibold ${link.labelClassName}`}
+                    >
+                      {link.label}
+                    </span>
+                    <ChevronRightIcon size={14} strokeWidth={2.5} />
+                  </Link>
+                );
+              })}
             </nav>
-          )}
-        </div>
-      </div>
+
+            <form action={signOut} className="px-3 pb-3 pt-1">
+              <button
+                type="submit"
+                className="flex w-full items-center rounded-[14px] px-3 py-2.5 text-left font-[family-name:var(--font-friends-sans)] transition active:bg-[rgba(208,96,96,0.08)]"
+              >
+                <span className="grid size-8 shrink-0 place-items-center rounded-[10px] bg-[rgba(208,96,96,0.10)] text-[#D06060]">
+                  <LogOutIcon size={15} strokeWidth={2} />
+                </span>
+                <span className="ml-3 min-w-0 flex-1 truncate text-[14px] font-semibold text-[#D06060]">
+                  Sign out
+                </span>
+              </button>
+            </form>
+          </div>
+        </>
+      )}
     </header>
   );
 }
@@ -219,6 +297,142 @@ function MenuIcon({ size, strokeWidth }: IconProps) {
       <path d="M4 6h16" />
       <path d="M4 12h16" />
       <path d="M4 18h16" />
+    </svg>
+  );
+}
+
+function CloseIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function InfoIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </svg>
+  );
+}
+
+function HeartIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M19 14c1.5-1.5 3-3.4 3-5.5A5.5 5.5 0 0 0 12 5a5.5 5.5 0 0 0-10 3.5c0 2.1 1.5 4 3 5.5l7 7Z" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20 13c0 5-3.5 7.5-7.7 8.9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1Z" />
+    </svg>
+  );
+}
+
+function FileTextIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#C4D4DE"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+function LogOutIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="m16 17 5-5-5-5" />
+      <path d="M21 12H9" />
     </svg>
   );
 }
