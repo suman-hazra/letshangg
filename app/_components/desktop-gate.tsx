@@ -3,26 +3,21 @@
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 const EXEMPT = ["/about", "/contribute", "/terms", "/privacy"];
 
 export function DesktopGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const check = () => setIsDesktop(window.innerWidth >= 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  const isDesktop = useSyncExternalStore(
+    subscribeToResize,
+    getIsDesktop,
+    getServerIsDesktop,
+  );
 
   const isExempt = EXEMPT.some((p) => pathname.startsWith(p));
 
-  if (!mounted || !isDesktop || isExempt) return <>{children}</>;
+  if (!isDesktop || isExempt) return <>{children}</>;
 
   return (
     <div className="flex min-h-dvh flex-col bg-[linear-gradient(170deg,#FFF8D6_0%,#FFEAD2_34%,#DCEEFA_72%,#CFE7FB_100%)]">
@@ -72,4 +67,17 @@ export function DesktopGate({ children }: { children: React.ReactNode }) {
       </footer>
     </div>
   );
+}
+
+function subscribeToResize(callback: () => void) {
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+}
+
+function getIsDesktop() {
+  return window.innerWidth >= 768;
+}
+
+function getServerIsDesktop() {
+  return false;
 }

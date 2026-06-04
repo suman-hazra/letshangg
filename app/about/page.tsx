@@ -25,7 +25,7 @@ export default function AboutPage() {
         <div className="mt-8 space-y-6 text-[15px] leading-relaxed text-[#3A3330]">
           <p>
             Making plans with friends should be easy. In practice, it&apos;s a
-            string of unanswered texts, vague "we should hang soon" promises,
+            string of unanswered texts, vague &quot;we should hang soon&quot; promises,
             and nobody wanting to be the one to suggest something first.
           </p>
 

@@ -17,7 +17,7 @@ const PREF = {
 const ALL_PREFS = new Map(Object.values(PREF).map((p) => [p.id, p]));
 
 describe("matchPreferences", () => {
-  it("happy path: 3 shared YAYs with 1 friend, capped at 2", () => {
+  it("happy path: 3 shared YAYs with 1 friend, capped at the default", () => {
     const out = matchPreferences({
       userId: ME,
       myYays: new Set(["p-coffee", "p-hike", "p-drinks"]),
@@ -29,9 +29,9 @@ describe("matchPreferences", () => {
 
     expect(out).toHaveLength(1);
     expect(out[0].friendId).toBe(FRIEND_1);
-    expect(out[0].preferenceIds).toHaveLength(2);
-    // alphabetical by activity_key: coffee, drinks, hike → take first 2
-    expect(out[0].preferenceIds).toEqual(["p-coffee", "p-drinks"]);
+    expect(out[0].preferenceIds).toHaveLength(1);
+    // alphabetical by activity_key: coffee, drinks, hike -> take first
+    expect(out[0].preferenceIds).toEqual(["p-coffee"]);
   });
 
   it("zero overlap returns no hangs for that friend", () => {
@@ -81,7 +81,7 @@ describe("matchPreferences", () => {
     expect(out).toHaveLength(2);
     const f1 = out.find((m) => m.friendId === FRIEND_1)!;
     const f2 = out.find((m) => m.friendId === FRIEND_2)!;
-    expect(f1.preferenceIds).toHaveLength(2);
+    expect(f1.preferenceIds).toEqual(["p-coffee"]);
     expect(f2.preferenceIds).toEqual(["p-coffee"]);
   });
 

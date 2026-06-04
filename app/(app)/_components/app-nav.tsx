@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 const TABS: {
@@ -32,8 +33,16 @@ const TABS: {
   },
 ];
 
+const MENU_LINKS = [
+  { href: "/about", label: "About" },
+  { href: "/contribute", label: "Contribute" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+];
+
 export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
   const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Hide nav on moment screens — match and friended confirmation.
   if (pathname.startsWith("/match/") || pathname === "/friends/friended") return null;
@@ -89,13 +98,41 @@ export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
           })}
         </nav>
         <div className="mx-2 h-6 w-px shrink-0 bg-[rgba(140,192,235,0.3)]" />
-        <button
-          type="button"
-          aria-label="Open menu"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-[#4A6173] transition active:opacity-60"
-        >
-          <MenuIcon size={22} strokeWidth={2} />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="app-menu"
+            onClick={() => setIsMenuOpen((open) => !open)}
+            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition active:opacity-60 ${
+              isMenuOpen
+                ? "bg-[rgba(140,192,235,0.12)] text-[#4A6173]"
+                : "text-[#4A6173]"
+            }`}
+          >
+            <MenuIcon size={22} strokeWidth={2} />
+          </button>
+
+          {isMenuOpen && (
+            <nav
+              id="app-menu"
+              aria-label="Menu"
+              className="absolute right-0 top-12 w-48 overflow-hidden rounded-2xl border border-[rgba(140,192,235,0.24)] bg-white/95 py-2 text-[#2D3E4E] shadow-[0_12px_28px_rgba(44,62,78,0.16)] backdrop-blur-2xl"
+            >
+              {MENU_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-4 py-3 font-sans text-[14px] font-bold transition active:bg-[rgba(140,192,235,0.12)]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
+        </div>
       </div>
     </header>
   );

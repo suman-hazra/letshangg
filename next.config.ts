@@ -23,7 +23,11 @@ const nextConfig: NextConfig = {
 
 export default withSentryConfig(nextConfig, {
   silent: true,
-  disableLogger: true,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
   // Only upload source maps when SENTRY_AUTH_TOKEN is set (i.e. in CI/Vercel).
   sourcemaps: {
     disable: !process.env.SENTRY_AUTH_TOKEN,

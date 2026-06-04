@@ -66,10 +66,13 @@ function renderMatchHtml(args: {
   matchUrl: string;
 }): string {
   // Inline-styled HTML for max compatibility across mail clients.
-  const safeName = escapeHtml(args.toName);
   const safeFriend = escapeHtml(args.friendName);
   const safeCopy = escapeHtml(args.promptCopy);
   const safeUrl = escapeAttr(args.matchUrl);
+  const safeSiteUrl = escapeAttr(SITE_URL);
+  const safeLogoUrl = escapeAttr(`${SITE_URL.replace(/\/$/, "")}/logo-mark.png`);
+  const safeNameInitial = escapeHtml(initialFor(args.toName));
+  const safeFriendInitial = escapeHtml(initialFor(args.friendName));
 
   return `<!doctype html>
 <html>
@@ -78,45 +81,65 @@ function renderMatchHtml(args: {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>You matched with ${safeFriend}</title>
 </head>
-<body style="margin:0;padding:0;background:#f7f5f2;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',Helvetica,Arial,sans-serif;color:#1a1714;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f7f5f2;">
+<body style="margin:0;padding:0;background:#f6fbff;font-family:-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans','DM Sans',Helvetica,Arial,sans-serif;color:#2d3e4e;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f6fbff;background-image:linear-gradient(180deg,#f6fbff 0%,#fff8f4 100%);">
     <tr>
-      <td align="center" style="padding:48px 24px;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;">
+      <td align="center" style="padding:28px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:430px;">
           <tr>
-            <td style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#7a7570;">
-              letshangg
+            <td align="center" style="padding:0 0 18px;">
+              <img src="${safeLogoUrl}" width="57" alt="letshangg" style="display:block;border:0;height:auto;opacity:.92;">
             </td>
           </tr>
           <tr>
-            <td style="padding-top:12px;">
-              <span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#e8855a;vertical-align:middle;"></span>
-              <span style="margin-left:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;color:#1a1714;">Matched</span>
+            <td align="center" style="padding:0 0 18px;">
+              <span style="display:inline-block;background:#f09070;background-image:linear-gradient(135deg,#f09070,#e87060);color:#ffffff;border-radius:999px;padding:11px 22px;font-size:13px;line-height:1;font-weight:800;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 6px 20px rgba(232,112,96,.28);">
+                Matched
+              </span>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:24px;font-family:'DM Serif Display',Georgia,serif;font-size:34px;line-height:1.15;color:#1a1714;">
-              ${safeName}, you and ${safeFriend} both said yes.
+            <td style="background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);border-radius:26px;padding:26px 24px;text-align:center;box-shadow:0 8px 28px rgba(44,62,78,.1);">
+              <div style="font-family:'Lora','DM Serif Display',Georgia,serif;font-size:23px;line-height:1.26;font-weight:700;color:#2d3e4e;">
+                ${safeCopy}
+              </div>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:24px;font-size:16px;line-height:1.5;color:#1a1714;">
-              <em style="color:#7a7570;">"${safeCopy}"</em>
+            <td align="center" style="padding-top:24px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="center" width="86" style="width:86px;">
+                    <div style="margin:0 auto;width:56px;height:56px;border-radius:999px;border:3px solid #ffffff;background:#f0e4fa;color:#7a4faa;font-family:'Lora','DM Serif Display',Georgia,serif;font-size:23px;line-height:56px;font-weight:700;text-align:center;box-shadow:0 4px 14px rgba(44,62,78,.12);">${safeNameInitial}</div>
+                    <div style="padding-top:8px;font-size:12px;line-height:1.25;font-weight:800;color:#2d3e4e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">You</div>
+                  </td>
+                  <td align="center" width="34" style="width:34px;color:#e87060;font-size:20px;line-height:56px;">+</td>
+                  <td align="center" width="86" style="width:86px;">
+                    <div style="margin:0 auto;width:56px;height:56px;border-radius:999px;border:3px solid #ffffff;background:#dceefa;color:#4a7fa5;font-family:'Lora','DM Serif Display',Georgia,serif;font-size:23px;line-height:56px;font-weight:700;text-align:center;box-shadow:0 4px 14px rgba(44,62,78,.12);">${safeFriendInitial}</div>
+                    <div style="padding-top:8px;font-size:12px;line-height:1.25;font-weight:800;color:#2d3e4e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safeFriend}</div>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:32px;">
-              <a href="${safeUrl}" style="display:inline-block;background:#1a1714;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:14px;font-weight:600;">Open conversation</a>
+            <td align="center" style="padding-top:16px;font-family:'Lora','DM Serif Display',Georgia,serif;font-size:15px;line-height:1.4;font-style:italic;color:#7f96a8;">
+              you both said yes
             </td>
           </tr>
           <tr>
-            <td style="padding-top:40px;font-size:13px;color:#7a7570;">
+            <td style="padding-top:28px;">
+              <a href="${safeUrl}" style="display:block;background:#8cc0eb;background-image:linear-gradient(135deg,#8cc0eb,#6aaad8);color:#ffffff;text-decoration:none;text-align:center;padding:15px 24px;border-radius:999px;font-size:15px;line-height:1.2;font-weight:800;box-shadow:0 8px 24px rgba(108,170,216,.36);">Open Conversation</a>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top:20px;font-size:13px;line-height:1.5;color:#7f96a8;">
               The text never had to be sent. You both opted in privately. Now you can plan it.
             </td>
           </tr>
           <tr>
-            <td style="padding-top:48px;font-size:11px;color:#7a7570;">
-              <a href="${SITE_URL}" style="color:#7a7570;text-decoration:none;">letshangg.app</a>
+            <td align="center" style="padding-top:34px;font-size:11px;color:#9aacba;">
+              <a href="${safeSiteUrl}" style="color:#9aacba;text-decoration:none;">letshangg.app</a>
             </td>
           </tr>
         </table>
@@ -173,6 +196,9 @@ function renderFriendRequestHtml(args: {
   const safeName = escapeHtml(args.toName);
   const safeRequester = escapeHtml(args.requesterName);
   const safeUrl = escapeAttr(args.friendsUrl);
+  const safeSiteUrl = escapeAttr(SITE_URL);
+  const safeLogoUrl = escapeAttr(`${SITE_URL.replace(/\/$/, "")}/logo-mark.png`);
+  const safeRequesterInitial = escapeHtml(initialFor(args.requesterName));
 
   return `<!doctype html>
 <html>
@@ -181,40 +207,44 @@ function renderFriendRequestHtml(args: {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${safeRequester} wants to hang</title>
 </head>
-<body style="margin:0;padding:0;background:#f7f5f2;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',Helvetica,Arial,sans-serif;color:#1a1714;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f7f5f2;">
+<body style="margin:0;padding:0;background:#f6fbff;font-family:-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans','DM Sans',Helvetica,Arial,sans-serif;color:#2d3e4e;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f6fbff;background-image:linear-gradient(180deg,#f6fbff 0%,#fff8f4 100%);">
     <tr>
-      <td align="center" style="padding:48px 24px;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;">
+      <td align="center" style="padding:28px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:430px;">
           <tr>
-            <td style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#7a7570;">
-              letshangg
+            <td align="center" style="padding:0 0 18px;">
+              <img src="${safeLogoUrl}" width="57" alt="letshangg" style="display:block;border:0;height:auto;opacity:.92;">
             </td>
           </tr>
           <tr>
-            <td style="padding-top:12px;">
-              <span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#e8855a;vertical-align:middle;"></span>
-              <span style="margin-left:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;color:#1a1714;">Friend request</span>
+            <td align="center" style="padding:0 0 18px;">
+              <span style="display:inline-block;background:#f09070;background-image:linear-gradient(135deg,#f09070,#e87060);color:#ffffff;border-radius:999px;padding:11px 22px;font-size:13px;line-height:1;font-weight:800;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 6px 20px rgba(232,112,96,.28);">
+                Friend request
+              </span>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:24px;font-family:'DM Serif Display',Georgia,serif;font-size:34px;line-height:1.15;color:#1a1714;">
-              ${safeName}, ${safeRequester} wants to hang.
+            <td style="background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);border-radius:26px;padding:26px 24px;text-align:center;box-shadow:0 8px 28px rgba(44,62,78,.1);">
+              <div style="margin:0 auto 16px;width:56px;height:56px;border-radius:999px;border:3px solid #ffffff;background:#dceefa;color:#4a7fa5;font-family:'Lora','DM Serif Display',Georgia,serif;font-size:23px;line-height:56px;font-weight:700;text-align:center;box-shadow:0 4px 14px rgba(44,62,78,.12);">${safeRequesterInitial}</div>
+              <div style="font-family:'Lora','DM Serif Display',Georgia,serif;font-size:23px;line-height:1.26;font-weight:700;color:#2d3e4e;">
+                ${safeName}, ${safeRequester} wants to hang.
+              </div>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:24px;font-size:16px;line-height:1.5;color:#7a7570;">
+            <td align="center" style="padding-top:20px;font-size:13px;line-height:1.5;color:#7f96a8;">
               Accept the request to start getting matched on things you'd both enjoy.
             </td>
           </tr>
           <tr>
-            <td style="padding-top:32px;">
-              <a href="${safeUrl}" style="display:inline-block;background:#1a1714;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:14px;font-weight:600;">See friend request</a>
+            <td style="padding-top:28px;">
+              <a href="${safeUrl}" style="display:block;background:#8cc0eb;background-image:linear-gradient(135deg,#8cc0eb,#6aaad8);color:#ffffff;text-decoration:none;text-align:center;padding:15px 24px;border-radius:999px;font-size:15px;line-height:1.2;font-weight:800;box-shadow:0 8px 24px rgba(108,170,216,.36);">See Friend Request</a>
             </td>
           </tr>
           <tr>
-            <td style="padding-top:48px;font-size:11px;color:#7a7570;">
-              <a href="${SITE_URL}" style="color:#7a7570;text-decoration:none;">letshangg.app</a>
+            <td align="center" style="padding-top:34px;font-size:11px;color:#9aacba;">
+              <a href="${safeSiteUrl}" style="color:#9aacba;text-decoration:none;">letshangg.app</a>
             </td>
           </tr>
         </table>
@@ -223,6 +253,10 @@ function renderFriendRequestHtml(args: {
   </table>
 </body>
 </html>`;
+}
+
+function initialFor(s: string): string {
+  return s.trim().charAt(0).toUpperCase() || "?";
 }
 
 function escapeHtml(s: string): string {

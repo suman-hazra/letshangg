@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   type AcceptedFriend,
   type Match,
-  type PendingFriend,
   FriendsScreen,
 } from "./client";
 
