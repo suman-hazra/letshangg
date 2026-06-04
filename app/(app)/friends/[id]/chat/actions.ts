@@ -45,3 +45,41 @@ export async function sendFriendMessage(
   revalidatePath(`/friends/${friendshipId}/chat`);
   return {};
 }
+
+export async function markFriendMessagesRead(
+  friendshipId: string,
+): Promise<void> {
+  if (!friendshipId) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: friendship } = await supabase
+    .from("friendships")
+    .select("id, requester_id, addressee_id, status")
+    .eq("id", friendshipId)
+    .maybeSingle();
+
+  if (
+    !friendship ||
+    friendship.status !== "accepted" ||
+    (friendship.requester_id !== user.id && friendship.addressee_id !== user.id)
+  ) {
+    return;
+  }
+
+  await supabase.from("friendship_message_reads").upsert(
+    {
+      friendship_id: friendshipId,
+      user_id: user.id,
+      last_read_at: new Date().toISOString(),
+    },
+    { onConflict: "friendship_id,user_id" },
+  );
+
+  revalidatePath("/friends");
+  revalidatePath(`/friends/${friendshipId}/chat`);
+}

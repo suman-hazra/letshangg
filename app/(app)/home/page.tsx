@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { generateHangsForUser } from "@/lib/hang-manager";
-import { swipeHang, refreshHangs } from "./actions";
+import { swipeHang } from "./actions";
 
 const lora = Lora({
   subsets: ["latin"],
@@ -177,14 +177,6 @@ export default async function HomePage() {
               <p className="mt-6 font-[family-name:var(--font-home-sans)] text-base text-[#4A6173]">
                 New hangs surface when you or a friend updates their preferences.
               </p>
-              <form action={refreshHangs} className="mt-8">
-                <button
-                  type="submit"
-                  className="font-[family-name:var(--font-home-sans)] text-sm font-bold text-[#6AAAD8] underline underline-offset-4"
-                >
-                  Check for new hangs
-                </button>
-              </form>
             </div>
           ) : (
             <div className="text-center">

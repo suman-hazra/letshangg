@@ -13,6 +13,7 @@ type FriendProfile = {
 
 export type AcceptedFriend = FriendProfile & {
   friendshipId: string;
+  unreadMessageCount: number;
 };
 
 export type PendingFriend = FriendProfile & {
@@ -175,7 +176,7 @@ function MatchRow({ match, index }: { match: Match; index: number }) {
   return (
     <li>
       <Link
-        href={`/match/${match.hangId}/chat`}
+        href={`/match/${match.hangId}`}
         className="flex items-center gap-3 rounded-2xl border border-[rgba(232,133,90,0.25)] bg-[rgba(251,240,235,0.7)] px-4 py-3 backdrop-blur-md transition active:opacity-80"
       >
         <FriendAvatar
@@ -255,9 +256,10 @@ function FriendRow({
         type="button"
         onClick={() => router.push(`/friends/${friend.friendshipId}/chat`)}
         aria-label={`Message ${friend.displayName}`}
-        className="grid size-8 shrink-0 place-items-center rounded-xl text-[#B8C8D4] transition active:opacity-70 hover:text-[#6AAAD8]"
+        className="relative grid size-8 shrink-0 place-items-center rounded-xl text-[#B8C8D4] transition active:opacity-70 hover:text-[#6AAAD8]"
       >
         <ChatBubbleIcon />
+        <UnreadBadge count={friend.unreadMessageCount} />
       </button>
       <button
         type="button"
@@ -306,6 +308,16 @@ function FriendRow({
         </div>
       )}
     </li>
+  );
+}
+
+function UnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+
+  return (
+    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E8855A] px-1 font-[family-name:var(--font-friends-sans)] text-[9px] font-bold leading-none text-white">
+      {count > 99 ? "99+" : count}
+    </span>
   );
 }
 

@@ -82,16 +82,16 @@ body {
     --card-gap: 12px;
     --card-icon-size: 69px;
     --card-label-gap: 9px;
-    --carousel-gap: 66px;
+    --carousel-gap: 34px;
     --cta-gap: 78px;
     --cta-py: 18px;
     --foot-gap: 24px;
-    --headline-gap: 36px;
+    --headline-gap: 28px;
     --headline-size: 32px;
-    --logo-h: 136px;
-    --page-pad: 56px;
+    --logo-h: 118px;
+    --page-pad: 44px;
     --page-pad-b: 24px;
-    --sub-gap: 38px;
+    --sub-gap: 28px;
     --sub-size: 15.5px;
   }
 }

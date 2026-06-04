@@ -68,12 +68,10 @@ export default function Landing() {
         <h1 className="mt-[var(--headline-gap)] font-[family-name:var(--font-landing-heading)] text-[length:var(--headline-size)] font-extrabold leading-[1.1] tracking-normal text-[#15293A]">
           Plans feel easier
           <br />
-          <span className="whitespace-nowrap">
-            when they&apos;re{" "}
-            <span className="relative inline-block">
-              <span className="absolute bottom-[3px] left-[-5px] right-[-6px] h-4 -rotate-1 rounded-md bg-[linear-gradient(90deg,#8CC0EB_0%,#BFDDF0_100%)]" />
-              <span className="relative">mutual.</span>
-            </span>
+          <span>when they&apos;re </span>
+          <span className="relative inline-block whitespace-nowrap">
+            <span className="absolute bottom-[3px] left-[-5px] right-[-6px] h-4 -rotate-1 rounded-md bg-[linear-gradient(90deg,#8CC0EB_0%,#BFDDF0_100%)]" />
+            <span className="relative">mutual.</span>
           </span>
         </h1>
 

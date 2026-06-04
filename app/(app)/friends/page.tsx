@@ -84,7 +84,8 @@ export default async function FriendsPage({
   const prefIds = hangs.map((h) => h.preference_id);
   for (const id of matchFriendIds) friendIds.add(id);
 
-  const [profilesResult, prefsResult] = await Promise.all([
+  const [profilesResult, prefsResult, messagesResult, readsResult] =
+    await Promise.all([
     friendIds.size > 0
       ? supabase
           .from("profiles")
@@ -96,6 +97,26 @@ export default async function FriendsPage({
           .from("preference_options")
           .select("id, label, emoji")
           .in("id", prefIds)
+      : Promise.resolve({ data: [] }),
+    acceptedRows.length > 0
+      ? supabase
+          .from("friendship_messages")
+          .select("friendship_id, created_at, sender_id")
+          .in(
+            "friendship_id",
+            acceptedRows.map((row) => row.id),
+          )
+          .neq("sender_id", user.id)
+      : Promise.resolve({ data: [] }),
+    acceptedRows.length > 0
+      ? supabase
+          .from("friendship_message_reads")
+          .select("friendship_id, last_read_at")
+          .eq("user_id", user.id)
+          .in(
+            "friendship_id",
+            acceptedRows.map((row) => row.id),
+          )
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -111,6 +132,21 @@ export default async function FriendsPage({
   const prefById = new Map<string, { label: string; emoji: string | null }>();
   for (const pref of prefsResult.data ?? []) {
     prefById.set(pref.id, { label: pref.label, emoji: pref.emoji });
+  }
+
+  const readAtByFriendship = new Map<string, string>();
+  for (const read of readsResult.data ?? []) {
+    readAtByFriendship.set(read.friendship_id, read.last_read_at);
+  }
+
+  const unreadCountByFriendship = new Map<string, number>();
+  for (const message of messagesResult.data ?? []) {
+    const lastReadAt = readAtByFriendship.get(message.friendship_id);
+    if (lastReadAt && message.created_at <= lastReadAt) continue;
+    unreadCountByFriendship.set(
+      message.friendship_id,
+      (unreadCountByFriendship.get(message.friendship_id) ?? 0) + 1,
+    );
   }
 
   const matches: Match[] = hangs.map((h) => {
@@ -133,6 +169,7 @@ export default async function FriendsPage({
       row,
       row.requester_id === user.id ? row.addressee_id : row.requester_id,
       profileById,
+      unreadCountByFriendship.get(row.id) ?? 0,
     ),
   );
   const incomingPending = incomingPendingRows.map((row) =>
@@ -162,7 +199,8 @@ function toFriend(
   row: FriendshipRow,
   friendId: string,
   profileById: Map<string, ProfileRow>,
-): AcceptedFriend | PendingFriend {
+  unreadMessageCount = 0,
+): AcceptedFriend {
   const profile = profileById.get(friendId);
   const username = profile?.username ?? "friend";
 
@@ -171,5 +209,6 @@ function toFriend(
     displayName: profile?.display_name ?? username,
     username,
     avatarUrl: profile?.avatar_url ?? null,
+    unreadMessageCount,
   };
 }

@@ -156,7 +156,7 @@ export function ChatRoom({
           placeholder="Message…"
           rows={1}
           maxLength={2000}
-          className="min-h-[50px] max-h-32 flex-1 resize-none rounded-[24px] border border-[rgba(140,192,235,0.22)] bg-white/90 px-5 py-3.5 font-[family-name:var(--font-chat-sans)] text-[14px] text-[#2D3E4E] placeholder:text-[#B0C2CF] shadow-[0_4px_18px_rgba(44,62,78,0.06)] focus:border-[#8CC0EB] focus:outline-none"
+          className="min-h-[50px] max-h-32 flex-1 resize-none rounded-[24px] border border-[rgba(140,192,235,0.22)] bg-white/90 px-5 py-3.5 font-[family-name:var(--font-chat-sans)] text-[16px] text-[#2D3E4E] placeholder:text-[#B0C2CF] shadow-[0_4px_18px_rgba(44,62,78,0.06)] focus:border-[#8CC0EB] focus:outline-none"
         />
         <button
           type="submit"

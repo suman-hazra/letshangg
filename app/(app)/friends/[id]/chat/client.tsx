@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { sendFriendMessage } from "./actions";
+import { markFriendMessagesRead, sendFriendMessage } from "./actions";
 
 type Message = {
   id: string;
@@ -30,6 +31,11 @@ export function FriendChatRoom({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    void markFriendMessagesRead(friendshipId).then(() => router.refresh());
+  }, [friendshipId, router]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -50,6 +56,11 @@ export function FriendChatRoom({
               ? prev
               : [...prev, message],
           );
+          if (message.sender_id !== myId) {
+            void markFriendMessagesRead(friendshipId).then(() =>
+              router.refresh(),
+            );
+          }
         },
       )
       .subscribe();
@@ -57,7 +68,7 @@ export function FriendChatRoom({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [friendshipId]);
+  }, [friendshipId, myId, router]);
 
   useEffect(() => {
     const el = listRef.current;
@@ -150,7 +161,7 @@ export function FriendChatRoom({
           placeholder="Message…"
           rows={1}
           maxLength={2000}
-          className="min-h-[50px] max-h-32 flex-1 resize-none rounded-[24px] border border-[rgba(140,192,235,0.22)] bg-white/90 px-5 py-3.5 font-[family-name:var(--font-chat-sans)] text-[14px] text-[#2D3E4E] placeholder:text-[#B0C2CF] shadow-[0_4px_18px_rgba(44,62,78,0.06)] focus:border-[#8CC0EB] focus:outline-none"
+          className="min-h-[50px] max-h-32 flex-1 resize-none rounded-[24px] border border-[rgba(140,192,235,0.22)] bg-white/90 px-5 py-3.5 font-[family-name:var(--font-chat-sans)] text-[16px] text-[#2D3E4E] placeholder:text-[#B0C2CF] shadow-[0_4px_18px_rgba(44,62,78,0.06)] focus:border-[#8CC0EB] focus:outline-none"
         />
         <button
           type="submit"

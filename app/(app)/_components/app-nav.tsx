@@ -32,7 +32,7 @@ const TABS: {
   },
 ];
 
-export function AppNav({ matchCount }: { matchCount: number }) {
+export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
   const pathname = usePathname();
 
   // Hide nav on moment screens — match and friended confirmation.
@@ -61,7 +61,10 @@ export function AppNav({ matchCount }: { matchCount: number }) {
           {TABS.map((tab) => {
             const active = tab.match(pathname);
             const Icon = tab.icon;
-            const badge = tab.href === "/friends" && matchCount > 0 ? matchCount : 0;
+            const badge =
+              tab.href === "/friends" && friendsBadgeCount > 0
+                ? friendsBadgeCount
+                : 0;
             return (
               <Link
                 key={tab.href}
