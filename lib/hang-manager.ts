@@ -29,6 +29,8 @@ export type MatchInput = {
   userId: string;
   myYays: Set<string>;
   friendYays: Map<string, Set<string>>;          // friendId -> YAY pref ids
+  myMehs?: Set<string>;
+  friendMehs?: Map<string, Set<string>>;         // friendId -> MEH pref ids
   prefCatalog: Map<string, { id: string; activity_key: string }>;
   cap?: number;
 };
@@ -45,12 +47,26 @@ export function matchPreferences(input: MatchInput): MatchOutput {
   const result: MatchOutput = [];
 
   for (const [friendId, friendSet] of input.friendYays) {
-    const shared: { id: string; activity_key: string }[] = [];
+    // First try: shared YAYs (highest priority).
+    let shared: { id: string; activity_key: string }[] = [];
     for (const prefId of input.myYays) {
       if (!friendSet.has(prefId)) continue;
       const cat = input.prefCatalog.get(prefId);
       if (cat) shared.push(cat);
     }
+
+    // Fallback: shared MEHs when no YAY overlap exists.
+    if (shared.length === 0 && input.myMehs && input.friendMehs) {
+      const friendMehSet = input.friendMehs.get(friendId);
+      if (friendMehSet) {
+        for (const prefId of input.myMehs) {
+          if (!friendMehSet.has(prefId)) continue;
+          const cat = input.prefCatalog.get(prefId);
+          if (cat) shared.push(cat);
+        }
+      }
+    }
+
     if (shared.length === 0) continue;
 
     shared.sort((a, b) => a.activity_key.localeCompare(b.activity_key));
@@ -106,30 +122,36 @@ export async function generateHangsForUser(userId: string): Promise<void> {
     ]),
   );
 
-  // 3. Fetch this user's YAY preferences.
-  const { data: myYays } = await admin
+  // 3. Fetch this user's YAY and MEH preferences.
+  const { data: myPrefs } = await admin
     .from("user_preferences")
-    .select("preference_id")
+    .select("preference_id, verdict")
     .eq("user_id", userId)
-    .eq("verdict", "yay");
+    .in("verdict", ["yay", "meh"]);
 
-  const myYaySet = new Set((myYays ?? []).map((p) => p.preference_id));
-  if (myYaySet.size === 0) return;
+  const myYaySet = new Set<string>();
+  const myMehSet = new Set<string>();
+  for (const p of myPrefs ?? []) {
+    if (p.verdict === "yay") myYaySet.add(p.preference_id);
+    else myMehSet.add(p.preference_id);
+  }
+  if (myYaySet.size === 0 && myMehSet.size === 0) return;
 
-  // 4. Fetch each friend's YAY preferences in one shot.
-  const { data: friendYays } = await admin
+  // 4. Fetch each friend's YAY and MEH preferences in one shot.
+  const { data: friendPrefs } = await admin
     .from("user_preferences")
-    .select("user_id, preference_id")
+    .select("user_id, preference_id, verdict")
     .in("user_id", friendIds)
-    .eq("verdict", "yay");
+    .in("verdict", ["yay", "meh"]);
 
-  // friend_id -> Set<preference_id>
   const friendYaysById = new Map<string, Set<string>>();
-  for (const row of friendYays ?? []) {
-    if (!friendYaysById.has(row.user_id)) {
-      friendYaysById.set(row.user_id, new Set());
+  const friendMehsById = new Map<string, Set<string>>();
+  for (const row of friendPrefs ?? []) {
+    const map = row.verdict === "yay" ? friendYaysById : friendMehsById;
+    if (!map.has(row.user_id)) {
+      map.set(row.user_id, new Set());
     }
-    friendYaysById.get(row.user_id)!.add(row.preference_id);
+    map.get(row.user_id)!.add(row.preference_id);
   }
 
   // 5. Fetch the activity catalog so we have labels + activity_key for copy.
@@ -137,6 +159,11 @@ export async function generateHangsForUser(userId: string): Promise<void> {
   for (const set of friendYaysById.values()) {
     for (const id of set) {
       if (myYaySet.has(id)) sharedPrefIds.add(id);
+    }
+  }
+  for (const set of friendMehsById.values()) {
+    for (const id of set) {
+      if (myMehSet.has(id)) sharedPrefIds.add(id);
     }
   }
 
@@ -157,6 +184,8 @@ export async function generateHangsForUser(userId: string): Promise<void> {
     userId,
     myYays: myYaySet,
     friendYays: friendYaysById,
+    myMehs: myMehSet,
+    friendMehs: friendMehsById,
     prefCatalog: new Map(
       Array.from(prefById.entries()).map(([id, p]) => [
         id,

@@ -34,11 +34,38 @@ describe("matchPreferences", () => {
     expect(out[0].preferenceIds).toEqual(["p-coffee"]);
   });
 
-  it("zero overlap returns no hangs for that friend", () => {
+  it("zero yay overlap falls back to shared mehs", () => {
     const out = matchPreferences({
       userId: ME,
       myYays: new Set(["p-coffee"]),
       friendYays: new Map([[FRIEND_1, new Set(["p-hike"])]]),
+      myMehs: new Set(["p-pizza", "p-drinks"]),
+      friendMehs: new Map([[FRIEND_1, new Set(["p-pizza"])]]),
+      prefCatalog: ALL_PREFS,
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].preferenceIds).toEqual(["p-pizza"]);
+  });
+
+  it("yay overlap takes precedence over meh overlap", () => {
+    const out = matchPreferences({
+      userId: ME,
+      myYays: new Set(["p-coffee"]),
+      friendYays: new Map([[FRIEND_1, new Set(["p-coffee"])]]),
+      myMehs: new Set(["p-pizza"]),
+      friendMehs: new Map([[FRIEND_1, new Set(["p-pizza"])]]),
+      prefCatalog: ALL_PREFS,
+    });
+    expect(out[0].preferenceIds).toEqual(["p-coffee"]);
+  });
+
+  it("zero overlap in both yay and meh returns no hangs", () => {
+    const out = matchPreferences({
+      userId: ME,
+      myYays: new Set(["p-coffee"]),
+      friendYays: new Map([[FRIEND_1, new Set(["p-hike"])]]),
+      myMehs: new Set(["p-pizza"]),
+      friendMehs: new Map([[FRIEND_1, new Set(["p-drinks"])]]),
       prefCatalog: ALL_PREFS,
     });
     expect(out).toEqual([]);
