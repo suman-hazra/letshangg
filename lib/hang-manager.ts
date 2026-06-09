@@ -17,6 +17,11 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateWarmCopy, pickFallbackCopy } from "@/lib/copy";
+import {
+  findLocalEventSuggestion,
+  isSupportedEventCity,
+  type LocalEventSuggestion,
+} from "@/lib/event-search";
 
 export const MAX_HANGS_PER_FRIEND = 1;
 
@@ -48,7 +53,7 @@ export function matchPreferences(input: MatchInput): MatchOutput {
 
   for (const [friendId, friendSet] of input.friendYays) {
     // First try: shared YAYs (highest priority).
-    let shared: { id: string; activity_key: string }[] = [];
+    const shared: { id: string; activity_key: string }[] = [];
     for (const prefId of input.myYays) {
       if (!friendSet.has(prefId)) continue;
       const cat = input.prefCatalog.get(prefId);
@@ -89,6 +94,7 @@ type SeededHang = {
   user_a: string;
   user_b: string;
   preference_id: string;
+  activity_key: string;
   activity_label: string;
   friend_name: string;
 };
@@ -109,11 +115,18 @@ export async function generateHangsForUser(userId: string): Promise<void> {
     f.requester_id === userId ? f.addressee_id : f.requester_id,
   );
 
-  // 2. Fetch profiles for friend display names.
-  const { data: friendProfiles } = await admin
-    .from("profiles")
-    .select("id, display_name, username")
-    .in("id", friendIds);
+  // 2. Fetch profiles for city-aware search and friend display names.
+  const [{ data: myProfile }, { data: friendProfiles }] = await Promise.all([
+    admin
+      .from("profiles")
+      .select("id, city")
+      .eq("id", userId)
+      .maybeSingle(),
+    admin
+      .from("profiles")
+      .select("id, display_name, username, city")
+      .in("id", friendIds),
+  ]);
 
   const profileById = new Map(
     (friendProfiles ?? []).map((p) => [
@@ -121,6 +134,7 @@ export async function generateHangsForUser(userId: string): Promise<void> {
       p.display_name ?? p.username ?? "your friend",
     ]),
   );
+  const cityById = new Map((friendProfiles ?? []).map((p) => [p.id, p.city]));
 
   // 3. Fetch this user's YAY and MEH preferences.
   const { data: myPrefs } = await admin
@@ -229,9 +243,9 @@ export async function generateHangsForUser(userId: string): Promise<void> {
     .from("hangs")
     .upsert(
       candidateRows.map((c) => ({
-        user_a: c.user_a,
-        user_b: c.user_b,
-        preference_id: c.preference_id,
+          user_a: c.user_a,
+          user_b: c.user_b,
+          preference_id: c.preference_id,
         prompt_copy: c.prompt_copy,
       })),
       {
@@ -243,20 +257,22 @@ export async function generateHangsForUser(userId: string): Promise<void> {
 
   if (!inserted || inserted.length === 0) return;
 
-  // 8. Fire LLM polish in parallel for the newly inserted rows.
+  // 8. Enrich newly inserted rows: current SF event first, generic LLM copy second.
   const seededHangs: SeededHang[] = inserted.map((row) => {
-    // Match back to candidateRow for friend_name + activity_label
-    const cand = candidateRows.find(
+    // Match back to candidateRow for friend_name + activity_label.
+    const candidateIndex = candidateRows.findIndex(
       (c) =>
         c.user_a === row.user_a &&
         c.user_b === row.user_b &&
         c.preference_id === row.preference_id,
-    )!;
+    );
+    const cand = candidateRows[candidateIndex]!;
     return {
       id: row.id,
       user_a: row.user_a,
       user_b: row.user_b,
       preference_id: row.preference_id,
+      activity_key: cand.activity_key,
       activity_label: cand.activity_label,
       friend_name: cand.friend_name,
     };
@@ -264,6 +280,28 @@ export async function generateHangsForUser(userId: string): Promise<void> {
 
   await Promise.allSettled(
     seededHangs.map(async (h) => {
+      const eventSuggestion = await findEventForSeededHang({
+        hang: h,
+        userId,
+        myCity: myProfile?.city,
+        cityById,
+      });
+
+      if (eventSuggestion) {
+        await admin
+          .from("hangs")
+          .update({
+            prompt_copy: eventSuggestion.promptCopy,
+            event_title: eventSuggestion.title,
+            event_url: eventSuggestion.url,
+            event_venue: eventSuggestion.venue,
+            event_starts_at: eventSuggestion.startsAt,
+            event_source: eventSuggestion.source,
+          })
+          .eq("id", h.id);
+        return;
+      }
+
       const polished = await generateWarmCopy(h.friend_name, h.activity_label);
       if (!polished) return;
       await admin
@@ -272,4 +310,28 @@ export async function generateHangsForUser(userId: string): Promise<void> {
         .eq("id", h.id);
     }),
   );
+}
+
+async function findEventForSeededHang(args: {
+  hang: SeededHang;
+  userId: string;
+  myCity: string | null | undefined;
+  cityById: Map<string, string | null>;
+}): Promise<LocalEventSuggestion | null> {
+  const friendId =
+    args.hang.user_a === args.userId ? args.hang.user_b : args.hang.user_a;
+  const friendCity = args.cityById.get(friendId);
+  if (
+    !isSupportedEventCity(args.myCity) ||
+    !isSupportedEventCity(friendCity)
+  ) {
+    return null;
+  }
+
+  return findLocalEventSuggestion({
+    city: "San Francisco",
+    friendName: args.hang.friend_name,
+    activityKey: args.hang.activity_key,
+    activityLabel: args.hang.activity_label,
+  });
 }

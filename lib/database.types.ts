@@ -211,6 +211,11 @@ export type Database = {
           user_b: string;
           preference_id: string;
           prompt_copy: string;
+          event_title: string | null;
+          event_url: string | null;
+          event_venue: string | null;
+          event_starts_at: string | null;
+          event_source: string | null;
           swipe_a: "right" | "left" | null;
           swipe_b: "right" | "left" | null;
           matched: boolean;
@@ -224,6 +229,11 @@ export type Database = {
           user_b: string;
           preference_id: string;
           prompt_copy: string;
+          event_title?: string | null;
+          event_url?: string | null;
+          event_venue?: string | null;
+          event_starts_at?: string | null;
+          event_source?: string | null;
           swipe_a?: "right" | "left" | null;
           swipe_b?: "right" | "left" | null;
           matched?: boolean;
@@ -237,6 +247,11 @@ export type Database = {
           user_b?: string;
           preference_id?: string;
           prompt_copy?: string;
+          event_title?: string | null;
+          event_url?: string | null;
+          event_venue?: string | null;
+          event_starts_at?: string | null;
+          event_source?: string | null;
           swipe_a?: "right" | "left" | null;
           swipe_b?: "right" | "left" | null;
           matched?: boolean;

@@ -58,6 +58,11 @@ type HangRow = {
   user_b: string;
   preference_id: string;
   prompt_copy: string;
+  event_title: string | null;
+  event_url: string | null;
+  event_venue: string | null;
+  event_starts_at: string | null;
+  event_source: string | null;
   created_at: string;
 };
 
@@ -68,7 +73,9 @@ async function fetchPendingHang(
   const [resultA, resultB] = await Promise.all([
     supabase
       .from("hangs")
-      .select("id, user_a, user_b, preference_id, prompt_copy, created_at")
+      .select(
+        "id, user_a, user_b, preference_id, prompt_copy, event_title, event_url, event_venue, event_starts_at, event_source, created_at",
+      )
       .eq("user_a", userId)
       .is("swipe_a", null)
       .eq("matched", false)
@@ -76,7 +83,9 @@ async function fetchPendingHang(
       .limit(1),
     supabase
       .from("hangs")
-      .select("id, user_a, user_b, preference_id, prompt_copy, created_at")
+      .select(
+        "id, user_a, user_b, preference_id, prompt_copy, event_title, event_url, event_venue, event_starts_at, event_source, created_at",
+      )
       .eq("user_b", userId)
       .is("swipe_b", null)
       .eq("matched", false)
@@ -262,6 +271,26 @@ export default async function HomePage() {
             <p className="font-[family-name:var(--font-home-serif)] text-[20px] font-medium leading-[1.35] text-[#2D3E4E]">
               {hang.prompt_copy}
             </p>
+            {hang.event_title && hang.event_url ? (
+              <a
+                href={hang.event_url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 block rounded-2xl border border-[#F5E3B2] bg-white/65 px-4 py-3 text-left transition active:opacity-70"
+              >
+                <span className="block truncate font-[family-name:var(--font-home-sans)] text-[11px] font-bold uppercase tracking-[0.08em] text-[#C07A32]">
+                  Current event
+                </span>
+                <span className="mt-1 block font-[family-name:var(--font-home-sans)] text-[13px] font-bold leading-snug text-[#2D3E4E]">
+                  {hang.event_title}
+                </span>
+                <span className="mt-1 block truncate font-[family-name:var(--font-home-sans)] text-[11px] font-semibold text-[#8A9CAB]">
+                  {[formatEventDate(hang.event_starts_at), hang.event_venue]
+                    .filter(Boolean)
+                    .join(" · ") || hang.event_source || "View source"}
+                </span>
+              </a>
+            ) : null}
             <span
               className="absolute bottom-0 left-1/2 h-4 w-4 -translate-x-1/2 translate-y-2 rotate-45 border-b border-r border-[#FCEFC7] bg-[#FFF9E8]"
               aria-hidden
@@ -296,6 +325,16 @@ export default async function HomePage() {
       </div>
     </main>
   );
+}
+
+function formatEventDate(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }
 
 function VerdictButton({

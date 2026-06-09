@@ -33,7 +33,7 @@ export default async function MatchPage({
   const { data: hang } = await supabase
     .from("hangs")
     .select(
-      "id, user_a, user_b, preference_id, prompt_copy, matched, seen_a_at, seen_b_at",
+      "id, user_a, user_b, preference_id, prompt_copy, event_title, event_url, event_venue, event_starts_at, event_source, matched, seen_a_at, seen_b_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -118,6 +118,26 @@ export default async function MatchPage({
             <h1 className="font-[family-name:var(--font-match-serif)] text-[clamp(20px,5.4vw,23px)] font-bold leading-[1.26] text-[#2D3E4E]">
               {hang.prompt_copy}
             </h1>
+            {hang.event_title && hang.event_url ? (
+              <a
+                href={hang.event_url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 block rounded-2xl border border-[rgba(140,192,235,0.22)] bg-white/70 px-4 py-3 text-left transition active:opacity-70"
+              >
+                <span className="block font-[family-name:var(--font-match-sans)] text-[11px] font-bold uppercase tracking-[0.08em] text-[#6AAAD8]">
+                  Current event
+                </span>
+                <span className="mt-1 block font-[family-name:var(--font-match-sans)] text-[13px] font-bold leading-snug text-[#2D3E4E]">
+                  {hang.event_title}
+                </span>
+                <span className="mt-1 block truncate font-[family-name:var(--font-match-sans)] text-[11px] font-semibold text-[#8A9CAB]">
+                  {[formatEventDate(hang.event_starts_at), hang.event_venue]
+                    .filter(Boolean)
+                    .join(" · ") || hang.event_source || "View source"}
+                </span>
+              </a>
+            ) : null}
           </section>
 
           <div className="mt-6">
@@ -181,6 +201,16 @@ export default async function MatchPage({
       </style>
     </main>
   );
+}
+
+function formatEventDate(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }
 
 function MatchAvatar({
