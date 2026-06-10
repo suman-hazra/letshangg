@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Lora, Plus_Jakarta_Sans, Poppins } from "next/font/google";
-import { signInWithGoogle } from "./actions";
+import { signInAsDemo, signInWithGoogle } from "./actions";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -23,9 +23,9 @@ const lora = Lora({
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
 
   return (
     <main
@@ -60,6 +60,12 @@ export default async function LoginPage({
             you do.
           </p>
 
+          {error && (
+            <p className="mx-auto mt-4 max-w-[300px] rounded-2xl border border-white/70 bg-white/60 px-4 py-3 font-[family-name:var(--font-landing-sans)] text-[13px] font-medium leading-[1.5] text-[#B0564A] backdrop-blur-md">
+              {decodeURIComponent(error)}
+            </p>
+          )}
+
           <form
             action={signInWithGoogle}
             suppressHydrationWarning
@@ -72,6 +78,15 @@ export default async function LoginPage({
             >
               <GoogleIcon />
               Continue with Google
+            </button>
+          </form>
+
+          <form action={signInAsDemo} className="mt-4 w-full">
+            <button
+              type="submit"
+              className="w-full rounded-full border-[1.5px] border-[rgba(140,192,235,0.45)] bg-white/40 px-7 py-[15px] font-[family-name:var(--font-landing-sans)] text-[15px] font-bold leading-[1.4] text-[#3D617C] backdrop-blur-sm transition active:scale-[0.98]"
+            >
+              Just looking? Try the demo
             </button>
           </form>
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { maybeSendPersonaHangReply } from "@/lib/demo";
 
 export async function sendMessage(
   prevState: unknown,
@@ -27,6 +28,12 @@ export async function sendMessage(
   });
 
   if (error) return { error: error.message };
+
+  // Demo personas reply in character; no-op for real friends. Realtime
+  // delivers the reply to the open chat.
+  await maybeSendPersonaHangReply(hangId, user.id, content).catch((e) =>
+    console.error("persona reply failed", e),
+  );
 
   revalidatePath(`/match/${hangId}/chat`);
   return {};

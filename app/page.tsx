@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Lora, Plus_Jakarta_Sans, Poppins } from "next/font/google";
+import { signInAsDemo } from "./(auth)/login/actions";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -114,8 +115,18 @@ export default function Landing() {
           </span>
         </Link>
 
+        {/* Empty form target so the demo button can live inline in the note
+            without adding vertical space to this fixed-height layout. */}
+        <form id="landing-demo" action={signInAsDemo} />
         <p className="mt-[var(--foot-gap)] shrink-0 font-[family-name:var(--font-landing-note)] text-[13.5px] font-normal italic leading-[1.4] text-[#4A6173]">
-          no pressure until it&apos;s a match.
+          no pressure until it&apos;s a match.{" "}
+          <button
+            type="submit"
+            form="landing-demo"
+            className="font-[family-name:var(--font-landing-sans)] text-[13px] font-bold not-italic text-[#3D617C] underline decoration-[rgba(140,192,235,0.8)] underline-offset-4"
+          >
+            or try the demo
+          </button>
         </p>
       </div>
     </main>

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateHangsForUser } from "@/lib/hang-manager";
+import { removeDemoFriendsForUser } from "@/lib/demo";
 
 export async function saveDisplayName(formData: FormData) {
   const display_name = String(formData.get("display_name") ?? "").trim();
@@ -98,6 +99,21 @@ export async function uploadAvatar(formData: FormData) {
   revalidatePath("/friends");
 
   return { url: avatar_url };
+}
+
+export async function removeDemoFriends() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await removeDemoFriendsForUser(user.id);
+
+  revalidatePath("/profile");
+  revalidatePath("/home");
+  revalidatePath("/friends");
+  redirect("/profile?saved=demo-removed");
 }
 
 export async function signOut() {

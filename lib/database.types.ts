@@ -22,6 +22,7 @@ export type Database = {
           display_name: string | null;
           avatar_url: string | null;
           city: string | null;
+          is_demo: boolean;
           created_at: string;
         };
         Insert: {
@@ -30,6 +31,7 @@ export type Database = {
           display_name?: string | null;
           avatar_url?: string | null;
           city?: string | null;
+          is_demo?: boolean;
           created_at?: string;
         };
         Update: {
@@ -38,6 +40,7 @@ export type Database = {
           display_name?: string | null;
           avatar_url?: string | null;
           city?: string | null;
+          is_demo?: boolean;
           created_at?: string;
         };
         Relationships: [];
@@ -218,6 +221,8 @@ export type Database = {
           event_source: string | null;
           swipe_a: "right" | "left" | null;
           swipe_b: "right" | "left" | null;
+          swipe_a_at: string | null;
+          swipe_b_at: string | null;
           matched: boolean;
           seen_a_at: string | null;
           seen_b_at: string | null;
@@ -236,6 +241,8 @@ export type Database = {
           event_source?: string | null;
           swipe_a?: "right" | "left" | null;
           swipe_b?: "right" | "left" | null;
+          swipe_a_at?: string | null;
+          swipe_b_at?: string | null;
           matched?: boolean;
           seen_a_at?: string | null;
           seen_b_at?: string | null;
@@ -254,6 +261,8 @@ export type Database = {
           event_source?: string | null;
           swipe_a?: "right" | "left" | null;
           swipe_b?: "right" | "left" | null;
+          swipe_a_at?: string | null;
+          swipe_b_at?: string | null;
           matched?: boolean;
           seen_a_at?: string | null;
           seen_b_at?: string | null;

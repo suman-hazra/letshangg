@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { maybeSendPersonaFriendReply } from "@/lib/demo";
 
 export async function sendFriendMessage(
   prevState: unknown,
@@ -41,6 +42,11 @@ export async function sendFriendMessage(
   });
 
   if (error) return { error: error.message };
+
+  // Demo personas reply in character; no-op for real friends.
+  await maybeSendPersonaFriendReply(friendshipId, user.id, content).catch(
+    (e) => console.error("persona reply failed", e),
+  );
 
   revalidatePath(`/friends/${friendshipId}/chat`);
   return {};

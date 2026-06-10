@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
-import { generateHangsForUser } from "@/lib/hang-manager";
-import { swipeHang } from "./actions";
+import { generateHangsForUser, rankPendingHangs } from "@/lib/hang-manager";
+import { triggerDemoSwipeBacks } from "@/lib/demo";
+import { refreshHangs, swipeHang, tryDemoFriends } from "./actions";
 
 const lora = Lora({
   subsets: ["latin"],
@@ -63,8 +64,17 @@ type HangRow = {
   event_venue: string | null;
   event_starts_at: string | null;
   event_source: string | null;
+  swipe_a: "right" | "left" | null;
+  swipe_b: "right" | "left" | null;
   created_at: string;
 };
+
+// How many pending hangs (per side) to pull into the ranking window. The
+// friend's swipe state is used for ordering only — never rendered.
+const QUEUE_WINDOW = 10;
+
+const PENDING_HANG_SELECT =
+  "id, user_a, user_b, preference_id, prompt_copy, event_title, event_url, event_venue, event_starts_at, event_source, swipe_a, swipe_b, created_at";
 
 async function fetchPendingHang(
   supabase: SupabaseClient,
@@ -73,32 +83,28 @@ async function fetchPendingHang(
   const [resultA, resultB] = await Promise.all([
     supabase
       .from("hangs")
-      .select(
-        "id, user_a, user_b, preference_id, prompt_copy, event_title, event_url, event_venue, event_starts_at, event_source, created_at",
-      )
+      .select(PENDING_HANG_SELECT)
       .eq("user_a", userId)
       .is("swipe_a", null)
       .eq("matched", false)
       .order("created_at", { ascending: true })
-      .limit(1),
+      .limit(QUEUE_WINDOW),
     supabase
       .from("hangs")
-      .select(
-        "id, user_a, user_b, preference_id, prompt_copy, event_title, event_url, event_venue, event_starts_at, event_source, created_at",
-      )
+      .select(PENDING_HANG_SELECT)
       .eq("user_b", userId)
       .is("swipe_b", null)
       .eq("matched", false)
       .order("created_at", { ascending: true })
-      .limit(1),
+      .limit(QUEUE_WINDOW),
   ]);
 
-  const candidates = [
-    ...(resultA.data ?? []),
-    ...(resultB.data ?? []),
-  ].sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const ranked = rankPendingHangs(
+    [...(resultA.data ?? []), ...(resultB.data ?? [])],
+    userId,
+  );
 
-  return candidates[0] ?? null;
+  return ranked[0] ?? null;
 }
 
 async function countPendingHangs(
@@ -129,6 +135,10 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Demo personas swipe back after a short "thinking" delay; completed
+  // matches are picked up by the unseen-match redirect just below.
+  const demo = await triggerDemoSwipeBacks(user.id);
 
   // Unseen match auto-redirect.
   const [{ data: unseenMatchA }, { data: unseenMatchB }] = await Promise.all([
@@ -176,7 +186,28 @@ export default async function HomePage() {
         className={`${lora.variable} ${jakarta.variable} flex flex-1 flex-col items-center px-6 pb-12`}
       >
         <div className="flex-1 flex items-center justify-center w-full max-w-[430px]">
-          {hasFriends ? (
+          {demo.pending > 0 ? (
+            <div className="text-center">
+              <div className="text-4xl mb-6" aria-hidden>🤞</div>
+              <h1 className="font-[family-name:var(--font-home-serif)] text-3xl leading-tight text-[#2D3E4E]">
+                Your friends are
+                <br />
+                thinking it over.
+              </h1>
+              <p className="mt-6 font-[family-name:var(--font-home-sans)] text-base leading-relaxed text-[#4A6173]">
+                You said yes — now it&apos;s their turn. Check back in a
+                moment.
+              </p>
+              <form action={refreshHangs} className="mt-8">
+                <button
+                  type="submit"
+                  className="inline-block rounded-full bg-[linear-gradient(135deg,#8CC0EB,#6AAAD8)] px-7 py-3 font-[family-name:var(--font-home-sans)] text-sm font-bold text-white shadow-[0_8px_20px_rgba(108,170,216,0.35)]"
+                >
+                  Check now
+                </button>
+              </form>
+            </div>
+          ) : hasFriends ? (
             <div className="text-center">
               <h1 className="font-[family-name:var(--font-home-serif)] text-3xl leading-tight text-[#2D3E4E]">
                 You&apos;re all
@@ -204,6 +235,14 @@ export default async function HomePage() {
               >
                 Add friends
               </Link>
+              <form action={tryDemoFriends} className="mt-4">
+                <button
+                  type="submit"
+                  className="font-[family-name:var(--font-home-sans)] text-[13px] font-bold text-[#6FA8CC] underline decoration-[rgba(140,192,235,0.6)] underline-offset-4"
+                >
+                  No friends here yet? Try it with demo friends
+                </button>
+              </form>
             </div>
           )}
         </div>

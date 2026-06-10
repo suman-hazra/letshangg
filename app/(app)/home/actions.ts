@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMatchEmail } from "@/lib/email";
 import { generateHangsForUser } from "@/lib/hang-manager";
+import { addDemoFriendsForUser } from "@/lib/demo";
 
 export async function swipeHang(formData: FormData) {
   const hangId = String(formData.get("hang_id") ?? "");
@@ -37,11 +38,16 @@ export async function swipeHang(formData: FormData) {
   const otherSide = isUserA ? hang.swipe_b : hang.swipe_a;
   const matched = verdict === "right" && otherSide === "right";
 
+  const swipedAt = new Date().toISOString();
   const update: {
     swipe_a?: "right" | "left";
     swipe_b?: "right" | "left";
+    swipe_a_at?: string;
+    swipe_b_at?: string;
     matched?: boolean;
-  } = isUserA ? { swipe_a: verdict } : { swipe_b: verdict };
+  } = isUserA
+    ? { swipe_a: verdict, swipe_a_at: swipedAt }
+    : { swipe_b: verdict, swipe_b_at: swipedAt };
   if (matched) update.matched = true;
 
   await supabase.from("hangs").update(update).eq("id", hangId);
@@ -74,6 +80,22 @@ export async function refreshHangs() {
 
   await generateHangsForUser(user.id);
   revalidatePath("/home");
+  redirect("/home");
+}
+
+/** Friends the demo personas and seeds hangs — the "try it solo" path. */
+export async function tryDemoFriends() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await addDemoFriendsForUser(user.id).catch((e) =>
+    console.error("demo friends setup failed", e),
+  );
+  revalidatePath("/home");
+  revalidatePath("/friends");
   redirect("/home");
 }
 

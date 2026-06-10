@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { addDemoFriendsForUser } from "@/lib/demo";
 
 export async function signInWithGoogle(formData: FormData) {
   const supabase = await createClient();
@@ -29,4 +30,38 @@ export async function signInWithGoogle(formData: FormData) {
   if (data?.url) {
     redirect(data.url);
   }
+}
+
+/**
+ * One-tap demo: anonymous Supabase session and instant demo friends — so a
+ * visitor experiences the full loop (profile → quiz → hangs → match → chat)
+ * without Google OAuth. The profile screen stays in the flow but arrives
+ * prefilled, so it's a single "Continue" tap. SF city prefill makes
+ * event-backed suggestions eligible.
+ * Requires "Allow anonymous sign-ins" in the Supabase dashboard.
+ */
+export async function signInAsDemo() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInAnonymously();
+
+  if (error || !data.user) {
+    redirect(
+      `/login?error=${encodeURIComponent(
+        "The demo is taking a breather — try signing in with Google instead.",
+      )}`,
+    );
+  }
+
+  await addDemoFriendsForUser(data.user.id).catch((e) =>
+    console.error("demo friends setup failed", e),
+  );
+
+  // Don't write display_name here — the profile page treats a set
+  // display_name as "already onboarded" and would skip the screen.
+  const prefill = new URLSearchParams({
+    username: `guest_${Math.random().toString(36).slice(2, 8)}`,
+    display_name: "Guest",
+    city: "San Francisco",
+  });
+  redirect(`/onboarding/profile?${prefill.toString()}`);
 }
