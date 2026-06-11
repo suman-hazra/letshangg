@@ -22,7 +22,8 @@ export async function swipeHang(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Determine which column to write to.
+  // Determine which column to write to. Read via the session client so RLS
+  // (hangs_read_party) confirms the caller is actually a party to this hang.
   const { data: hang } = await supabase
     .from("hangs")
     .select("id, user_a, user_b, swipe_a, swipe_b, preference_id, prompt_copy")
@@ -50,7 +51,12 @@ export async function swipeHang(formData: FormData) {
     : { swipe_b: verdict, swipe_b_at: swipedAt };
   if (matched) update.matched = true;
 
-  await supabase.from("hangs").update(update).eq("id", hangId);
+  // Clients can't UPDATE hangs directly (RLS denies it) — that's what stopped
+  // a party from forging a match or setting the other user's swipe. We've
+  // already authorized the caller and scoped `update` to their own columns, so
+  // the write goes through the service-role client.
+  const admin = createAdminClient();
+  await admin.from("hangs").update(update).eq("id", hangId);
 
   revalidatePath("/home");
 

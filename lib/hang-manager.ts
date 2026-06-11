@@ -223,7 +223,7 @@ type SeededHang = {
 
 export async function generateHangsForUser(
   userId: string,
-  opts?: { capPerFriend?: number },
+  opts?: { capPerFriend?: number; skipEnrichment?: boolean },
 ): Promise<void> {
   const admin = createAdminClient();
 
@@ -487,6 +487,12 @@ export async function generateHangsForUser(
   //    take 10s+ per hang and must never block the page load that triggered
   //    generation. Cards render immediately with their fallback copy and
   //    upgrade in place on a later load.
+  //
+  //    Skipped for demo runs: demo personas are seeded fakes, so the costly
+  //    per-hang OpenAI web_search adds little but would let anyone scripting
+  //    the anonymous demo path rack up unbounded API spend.
+  if (opts?.skipEnrichment) return;
+
   await scheduleAfterResponse(async () => {
     await Promise.allSettled(
       seededHangs.map(async (h) => {

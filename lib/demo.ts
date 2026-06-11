@@ -299,7 +299,10 @@ export async function addDemoFriendsForUser(userId: string): Promise<void> {
     );
   }
 
-  await generateHangsForUser(userId, { capPerFriend: DEMO_HANGS_PER_FRIEND });
+  await generateHangsForUser(userId, {
+    capPerFriend: DEMO_HANGS_PER_FRIEND,
+    skipEnrichment: true,
+  });
 }
 
 export async function userHasDemoFriends(userId: string): Promise<boolean> {
