@@ -35,6 +35,12 @@ body {
   font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Lock the app to a single vertical axis. Decorative blobs and rotated
+     cards deliberately bleed past the viewport edge; without this guard a few
+     px of overflow makes <body> horizontally scrollable (you can pan left and
+     right). `clip` kills that scroll without establishing a scroll container,
+     so vertical scrolling and `position: sticky` keep working. */
+  overflow-x: clip;
 }
 
 .landing-screen {
