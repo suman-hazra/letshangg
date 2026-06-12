@@ -168,7 +168,7 @@ export function AppNav({ friendsBadgeCount }: { friendsBadgeCount: number }) {
           />
           <div
             id="app-menu"
-            className="fixed right-[max(16px,calc((100vw-430px)/2+16px))] top-[113px] z-30 w-[260px] rounded-[22px] border border-white/90 bg-white/80 shadow-[0_20px_56px_rgba(44,62,78,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-3xl"
+            className="fixed right-[max(16px,calc((100vw-430px)/2+16px))] top-[113px] z-30 w-[260px] rounded-[22px] border border-white bg-white shadow-[0_20px_56px_rgba(44,62,78,0.18),inset_0_1px_0_rgba(255,255,255,0.8)]"
           >
             <nav aria-label="Menu" className="px-3 py-1">
               {MENU_LINKS.map((link) => {
