@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = {
-  title: "About — letshangg",
+  title: "About letshangg",
 };
 
 export default function AboutPage() {
@@ -24,29 +24,30 @@ export default function AboutPage() {
 
         <div className="mt-8 space-y-6 text-[15px] leading-relaxed text-[#3A3330]">
           <p>
-            Making plans with friends should be easy. In practice, it&apos;s a
-            string of unanswered texts, vague &quot;we should hang soon&quot; promises,
-            and nobody wanting to be the one to suggest something first.
+            letshangg started with a small, annoying truth: the people I most
+            wanted to see were the ones I saw the least. Not for any real
+            reason. Just inertia, unanswered texts, and that quiet hesitation
+            about being the one to reach out first.
           </p>
 
           <p>
-            letshangg cuts through that. You tell it what kinds of hangouts
-            you&apos;re actually up for — coffee, hiking, a movie, drinks —
-            and it quietly finds which of your friends want the same thing.
-            When there&apos;s a match, both of you find out at the same time.
-            No awkward asks. No visible rejection.
+            This is my attempt to fix that. You pick the kinds of hangouts you
+            enjoy, like coffee, hiking, movies, or drinks, and letshangg finds
+            the friends who are up for the same thing. When there&apos;s a
+            match, you both learn it together. No pressure, no awkward ask, and
+            no one ever sees a no.
           </p>
 
           <p>
-            It&apos;s friends-only. No discovery, no strangers, no swiping on
-            people you don&apos;t know. Just a better way to actually hang with
-            the people already in your life.
+            It&apos;s friends only, on purpose. No strangers, no discovery feed,
+            no swiping through people you&apos;ve never met. Just a gentler way
+            to keep up with the people you already care about.
           </p>
 
           <hr className="border-[#E8E4DF]" />
 
           <p>
-            letshangg is a personal project built by{" "}
+            I&apos;m{" "}
             <a
               href="https://github.com/suman-hazra"
               target="_blank"
@@ -55,8 +56,9 @@ export default function AboutPage() {
             >
               Suman Hazra
             </a>
-            . It&apos;s open source, non-commercial, and very much a work in
-            progress. Feedback and contributions are very welcome.
+            , and letshangg is a personal project I keep tinkering with.
+            It&apos;s open source, non-commercial, and a work in progress, so
+            feedback and contributions mean a lot.
           </p>
         </div>
 
